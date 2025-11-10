@@ -619,7 +619,7 @@ const News = () => (
                   className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-800 font-medium group-hover:translate-x-1 transition-all duration-300"
                 >
                   <FileText size={16} />
-                  <span>Read More</span>
+                  <a href={item.link} target={item.target}>Read More</a>
                   <ArrowRight size={16} />
                 </a>
               </div>
