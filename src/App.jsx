@@ -101,21 +101,27 @@ const newsItems = [
     date: 'Oct 26, 2023', 
     href: 'adv-man-power.pdf',
     category: 'Recruitment',
-    excerpt: 'New positions available for project staff members.'
+    excerpt: 'New positions available for project staff members.',
+    link:'https://drive.google.com/file/d/1jX9uzYPBke7T8fNhIlMM4xA3RnHaSBec/view?usp=sharing',
+    target:'_blank'
   },
   { 
     title: 'Launch of Science, Technology, and Innovation Hub', 
     date: 'Sep 15, 2023', 
     href: '#',
     category: 'Launch',
-    excerpt: 'Official inauguration of the STI Hub project.'
+    excerpt: 'Official inauguration of the STI Hub project.',
+    link:'#team',
+    target:''
   },
   { 
     title: 'Community Outreach in Kowdipally Block', 
     date: 'Nov 05, 2023', 
     href: '#',
     category: 'Outreach',
-    excerpt: 'Successful community engagement program completed.'
+    excerpt: 'Successful community engagement program completed.',
+    link:'#team',
+    target:''
   },
 ];
 
@@ -602,9 +608,9 @@ const News = () => (
                   </div>
                 </div>
                 
-                <h3 className="text-xl font-bold text-gray-800 mb-3 leading-tight group-hover:text-blue-600 transition-colors">
+                <a href={item.link} target={item.target} className='hover:underline'><h3 className="text-xl font-bold text-gray-800 mb-3 leading-tight group-hover:text-blue-600 transition-colors">
                   {item.title}
-                </h3>
+                </h3></a>
                 
                 <p className="text-gray-600 mb-6 leading-relaxed">{item.excerpt}</p>
                 
