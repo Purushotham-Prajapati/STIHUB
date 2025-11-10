@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  ChevronLeft, ChevronRight, User, Mail, Building, FileText, Handshake, Phone, Menu, X, ArrowRight, Calendar, MapPin, Award, Users, Target, Lightbulb
+  ChevronLeft, ChevronRight, User, Mail, Building, FileText, Handshake, Phone, Menu, X, ArrowRight, Calendar, MapPin, Award, Users, Target, Lightbulb,
+  Linkedin, Instagram, Twitter, Globe
 } from 'lucide-react';
 
 // Import your images from the assets folder
@@ -743,13 +744,56 @@ const Footer = () => (
       </div>
       
       <div className="border-t border-gray-700 pt-8 text-center">
-        <p className="text-gray-400">
+        <p className="text-gray-400 mb-4">
           &copy; {new Date().getFullYear()} STI Hub, VNRVJIET. All Rights Reserved. | 
           <span className="text-blue-400 ml-1">Funded by Vigyan Dhara, DST, Government of India</span>
         </p>
+        <SocialMediaLinks />
       </div>
     </div>
   </footer>
+);
+
+// Social Media Links
+const SocialMediaLinks = () => (
+  <div className="flex items-center justify-center space-x-4 mt-4">
+    <a 
+      href="https://www.linkedin.com/school/vnrvjiethyd/" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="text-gray-400 hover:text-blue-500 transition-colors"
+      aria-label="LinkedIn"
+    >
+      <Linkedin size={20} />
+    </a>
+    <a 
+      href="https://www.instagram.com/vnrvjiet.hyd/" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="text-gray-400 hover:text-pink-500 transition-colors"
+      aria-label="Instagram"
+    >
+      <Instagram size={20} />
+    </a>
+    <a 
+      href="https://x.com/vnrvjiethyd" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="text-gray-400 hover:text-blue-400 transition-colors"
+      aria-label="Twitter"
+    >
+      <Twitter size={20} />
+    </a>
+    <a 
+      href="https://vnrvjiet.ac.in/" 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="text-gray-400 hover:text-purple-500 transition-colors"
+      aria-label="VNRVJIET Website"
+    >
+      <Globe size={20} />
+    </a>
+  </div>
 );
 
 // Scroll to Top Button Component
