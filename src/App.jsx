@@ -7,8 +7,7 @@ import {
 import dstLogo from './assets/dst.jpg';
 import vnrLogo from './assets/vnr1.jpg';
 import pareaImg from './assets/parea.jpg';
-import collaborationIcon from './assets/collaboration-9659.png';
-import mailIcon from './assets/mail.png';
+
 
 // Gallery Images
 import gallery1 from './assets/gallery-1.jpg';
@@ -246,7 +245,7 @@ const Hero = () => (
         <span className="text-sm font-medium">Funded by Vigyan Dhara, DST</span>
       </div>
       
-      <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight">
+      <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 leading-tight block bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
         Science, Technology, and
         <span className="block bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
           Innovation Hub
@@ -365,7 +364,7 @@ const AboutProject = () => (
             </div>
           </div>
           
-          <p className="text-gray-700 leading-relaxed text-lg mb-8">
+          <p className=" font-semibold text-blue-700 leading-relaxed text-lg mb-8">
             Science Technology and Innovation Hub for Development of Scheduled Tribe Community in tribal areas of 
             <span className="font-semibold text-blue-700"> Kowdipally Block, Medak District, Telangana State</span>
           </p>
