@@ -292,7 +292,7 @@ const Gallery = () => {
   }, [current]);
 
   useEffect(() => {
-    const slideInterval = setInterval(nextSlide, 6000);
+    const slideInterval = setInterval(nextSlide, 4000); // Changed to 3 seconds
     return () => clearInterval(slideInterval);
   }, [nextSlide]);
 
