@@ -83,7 +83,7 @@ const teamMembers = {
     { name: 'Dr. Padmavathi Papolu', role: 'Assistant Professor, Chemistry, VNRVJIET', avatar: '👩‍🔬' },
     { name: 'Dr. K Anuradha', role: 'Professor of EEE, VNRVJIET', avatar: '👩‍🔬' },
     { name: 'Dr. Myneni Madhu Bala', role: 'Professor of CSE, VNRVJIET', avatar: '👩‍🔬' },
-    { name: 'Dr. B. Ashok', role: 'Sn. Assistant Professor of Physics, VNRVJIET', avatar: '👨‍🔬' },
+    { name: 'Dr. B. Ashok', role: 'Sr. Assistant Professor of Physics, VNRVJIET', avatar: '👨‍🔬' },
     { name: 'Dr. B. Prathyusha', role: 'Assistant Professor of MBA, VNRVJIET', avatar: '👩‍🔬' },
     { name: 'Dr. K Madhavi', role: 'Assistant Professor, Chemistry, VNRVJIET', avatar: '👩‍🔬' },
     { name: 'Mr. K. Veerendra Gopi', role: 'Assistant Professor, CE, VNRVJIET', avatar: '👨‍🔬' },
@@ -174,9 +174,9 @@ const Header = () => {
         : 'bg-white/80 backdrop-blur-md py-4'
     }`}>
       <div className="container mx-auto px-6 md:px-12 lg:px-16 max-w-7xl flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <img src={dstLogo} alt="DST Logo" className="h-12 w-12 object-contain rounded-lg shadow-sm" />
-          <div className="flex flex-col">
+        <div className="flex items-center space-x-3">
+          <a href='https://vnrvjiet.ac.in/' target='_blank'><img src={vnrLogo} alt="VNRVJIET Logo" className="h-12 w-auto object-contain ml-2 rounded-lg shadow-sm" /></a>
+          <div className="flex flex-col -m-r-2">
             <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               STI HUB
             </h1>
@@ -184,7 +184,7 @@ const Header = () => {
               SEED, DST – VNR Vignana Jyothi Institute of Engineering and Technology
             </p>
           </div>
-          <img src={vnrLogo} alt="VNRVJIET Logo" className="h-12 w-auto object-contain ml-2 rounded-lg shadow-sm" />
+          <img src={dstLogo} alt="DST Logo" className=" -ml-2 h-12 w-12 object-contain rounded-lg shadow-sm" />
         </div>
 
         {/* Desktop Navigation */}
