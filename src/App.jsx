@@ -15,6 +15,7 @@ import gallery1 from './assets/gallery-1.jpg';
 import gallery2 from './assets/gallery-2.jpg';
 import gallery3 from './assets/gallery-3.jpg';
 import gallery4 from './assets/gallery-4.jpg';
+import gallery5 from './assets/team.jpeg';
 
 // Community Engagement Icons
 import communityIcon from './assets/community.png';
@@ -37,7 +38,7 @@ const navLinks = [
   { name: 'Contact', href: '#contact', icon: Mail },
 ];
 
-const galleryImages = [gallery1, gallery2, gallery3, gallery4];
+const galleryImages = [gallery1, gallery5,gallery2, gallery3, gallery4];
 
 const engagementOutcomes = [
   { 
@@ -127,7 +128,7 @@ const projectStats = [
 
 // --- Reusable Components ---
 const Section = ({ id, children, className = '' }) => (
-  <section id={id} className={`py-20 md:py-32 ${className}`}>
+  <section id={id} className={`py-6 ${className}`}>
     <div className="container mx-auto px-6 md:px-12 lg:px-16 max-w-7xl">
       {children}
     </div>
@@ -135,8 +136,8 @@ const Section = ({ id, children, className = '' }) => (
 );
 
 const SectionTitle = ({ children, subtitle }) => (
-  <div className="text-center mb-16">
-    <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+  <div className="text-center mb-8">
+    <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent py-4">
       {children}
     </h2>
     {subtitle && (
@@ -147,7 +148,7 @@ const SectionTitle = ({ children, subtitle }) => (
 
 const AnimatedCard = ({ children, className = '', delay = 0 }) => (
   <div 
-    className={`transform transition-all duration-700 hover:scale-105 ${className}`}
+    className={`transform transition-all duration-700 hover:scale-102 ${className}`}
     style={{ animationDelay: `${delay}ms` }}
   >
     {children}
@@ -168,7 +169,7 @@ const Header = () => {
   }, []);
 
   return (
-    <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+    <header className={`fixed  top-0 w-full z-50 transition-all duration-300 ${
       isScrolled 
         ? 'bg-white/95 backdrop-blur-lg shadow-lg py-2' 
         : 'bg-white/80 backdrop-blur-md py-4'
@@ -233,7 +234,7 @@ const Header = () => {
 };
 
 const Hero = () => (
-  <Section id="home" className="pt-32 pb-20 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white relative overflow-hidden">
+  <Section id="home" className=" py-20 md:py-32 pt-32 pb-20 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white relative overflow-hidden">
     {/* Background Pattern */}
     <div className="absolute inset-0 opacity-10">
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent transform -skew-y-12 scale-150"></div>
@@ -252,12 +253,12 @@ const Hero = () => (
         </span>
       </h1>
       
-      <p className="text-xl md:text-2xl font-light text-blue-100 max-w-4xl mx-auto mb-12 leading-relaxed">
+      <p className="text-xl md:text-2xl font-light text-blue-100 max-w-4xl mx-auto mb-6  leading-relaxed">
         Empowering Scheduled Tribe Communities through Science, Technology & Innovation in 
         <span className="font-semibold text-white"> Kowdipally Block, Medak District, Telangana</span>
       </p>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16">
+      {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16">
         {projectStats.map((stat, index) => (
           <AnimatedCard key={index} delay={index * 100} className="text-center">
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
@@ -267,7 +268,7 @@ const Hero = () => (
             </div>
           </AnimatedCard>
         ))}
-      </div>
+      </div> */}
     </div>
   </Section>
 );
@@ -289,7 +290,7 @@ const Gallery = () => {
   }, [nextSlide]);
 
   return (
-    <Section className="bg-gray-50">
+    <Section className="bg-gray-50 py-10 md:py-16">
       <SectionTitle subtitle="Capturing moments from our community engagement and project activities">
         Photo Gallery
       </SectionTitle>
@@ -391,8 +392,8 @@ const AboutProject = () => (
             </div>
           </div>
         </AnimatedCard>
-
-        <AnimatedCard delay={200} className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+        <div></div>
+        <AnimatedCard delay={200} className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 w-[85vw] mb-6" >
           <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
             <MapPin className="text-red-500" size={28} />
             <span>Project Objectives</span>
@@ -450,14 +451,14 @@ const AboutProject = () => (
 
 const CommunityEngagement = () => (
   <Section id="outcomes" className="bg-gradient-to-br from-gray-50 to-blue-50">
-    <SectionTitle subtitle="Measuring our impact through comprehensive community engagement initiatives">
+    <SectionTitle subtitle="Measuring our impact through comprehensive community engagement initiatives ">
       Community Engagement Outcomes
     </SectionTitle>
     
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
       {engagementOutcomes.map((item, index) => (
         <AnimatedCard key={index} delay={index * 150} className="group">
-          <div className={`relative overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 bg-gradient-to-br ${item.bgGradient} p-8 text-white min-h-[400px] flex flex-col justify-between transform group-hover:-translate-y-2`}>
+          <div className={`relative overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 bg-gradient-to-br ${item.bgGradient} px-6 py-2 pt-3 text-white min-h-[300px] flex flex-col justify-between transform group-hover:-translate-y-2`}>
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute inset-0 bg-white transform rotate-12 scale-150 -translate-y-1/2"></div>
@@ -476,12 +477,12 @@ const CommunityEngagement = () => (
               <p className="text-white/90 text-sm leading-relaxed mb-4">{item.description}</p>
             </div>
             
-            <div className="relative z-10 text-center">
+            {/* <div className="relative z-10 text-center">
               <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 border border-white/30">
                 <p className="text-2xl font-bold">{item.stats}</p>
                 <p className="text-white/80 text-sm">Achievement</p>
               </div>
-            </div>
+            </div> */}
           </div>
         </AnimatedCard>
       ))}
@@ -534,8 +535,8 @@ const Team = () => (
     
     <div className="max-w-6xl mx-auto space-y-12">
       {/* Principal Investigator */}
-      <AnimatedCard className="bg-white rounded-3xl shadow-xl p-10 border border-indigo-100">
-        <div className="text-center mb-8">
+      <AnimatedCard className="bg-white rounded-3xl shadow-xl p-10 py-5 mb-6 border border-indigo-100">
+        <div className="text-center mb-6 scale-90">
           <div className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-4xl w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
             {teamMembers.pi.avatar}
           </div>
@@ -544,14 +545,14 @@ const Team = () => (
           </span>
         </div>
         
-        <div className="text-center">
+        <div className="text-center scale-90">
           <h3 className="text-3xl font-bold text-gray-800 mb-2">{teamMembers.pi.name}</h3>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">{teamMembers.pi.role}</p>
         </div>
       </AnimatedCard>
 
       {/* Co-Investigators */}
-      <AnimatedCard delay={200} className="bg-white rounded-3xl shadow-xl p-10 border border-indigo-100">
+      <AnimatedCard delay={200} className="bg-white rounded-3xl shadow-xl p-10 py-5 mb-4 border border-indigo-100">
         <div className="text-center mb-10">
           <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
             Co-Investigators
@@ -580,7 +581,7 @@ const Team = () => (
 );
 
 const News = () => (
-  <Section className="bg-gray-50">
+  <Section className="bg-gray-50 my-8">
     <SectionTitle subtitle="Stay updated with our latest developments and announcements">
       News & Reports
     </SectionTitle>
@@ -626,41 +627,42 @@ const News = () => (
 
 const Contact = () => (
   <Section id="contact" className="bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white">
-    <SectionTitle subtitle="Connect with us to learn more about our initiatives and collaborations">
-      Get In Touch
+    <SectionTitle subtitle="">
+      <p className='text-5xl text-cyan-500'>Get In Touch</p>
+      <p className='text-white text-2xl mt-4'>Connect with us to learn more about our initiatives and collaborations</p>
     </SectionTitle>
     
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-      <AnimatedCard className="text-center">
-        <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-10 border border-white/20 hover:border-white/30 transition-all duration-300">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto -mt-10">
+      <AnimatedCard className="text-center scale-90">
+        <div className="min-h-[65vh] bg-white/10 backdrop-blur-lg rounded-3xl p-10 border border-white/20 hover:border-white/30 transition-all duration-300">
           <div className="bg-gradient-to-br from-blue-400 to-cyan-400 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
             <Handshake size={32} className="text-white" />
           </div>
           
           <h3 className="text-2xl font-bold mb-6">Collaboration</h3>
           
-          <div className="bg-white/5 rounded-2xl p-6 mb-6">
+          {/* <div className="bg-white/5 rounded-2xl p-6 mb-6">
             <img src={collaborationIcon} alt="Collaboration" className="h-24 mx-auto mb-4 opacity-90"/>
-          </div>
+          </div> */}
           
           <p className="text-blue-100 leading-relaxed text-lg">
-            In collaboration with <span className="font-semibold text-white">Dr. Rama Naidu Vignana Jyothi Institute of Rural Development (DRNVJIRD)</span>, 
+            In collaboration with <span className="font-semibold text-white">Dr. Rama Naidu Vignana Jyothi Institute of Rural Development (DRNVJIRD),</span><br></br> 
             Thuniki village, Medak, Telangana.
           </p>
         </div>
       </AnimatedCard>
 
-      <AnimatedCard delay={200} className="text-center">
-        <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-10 border border-white/20 hover:border-white/30 transition-all duration-300">
+      <AnimatedCard delay={200} className="text-center  scale-90">
+        <div className=" min-h-[65vh] bg-white/10 backdrop-blur-lg rounded-3xl p-10 border border-white/20 hover:border-white/30 transition-all duration-300">
           <div className="bg-gradient-to-br from-green-400 to-emerald-400 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
             <Mail size={32} className="text-white" />
           </div>
           
           <h3 className="text-2xl font-bold mb-6">Contact Us</h3>
           
-          <div className="bg-white/5 rounded-2xl p-6 mb-6">
-            <img src={mailIcon} alt="Contact" className="h-20 mx-auto mb-4 opacity-90"/>
-          </div>
+            {/* <div className="bg-white/5 rounded-2xl p-6 mb-6">
+              <img src={mailIcon} alt="Contact" className="h-20 mx-auto mb-4 opacity-90"/>
+            </div> */}
           
           <div className="space-y-4 text-left">
             <div className="flex items-center space-x-3">
@@ -720,7 +722,7 @@ const Footer = () => (
           <div className="space-y-3">
             <div className="flex items-center space-x-3">
               <MapPin size={16} className="text-blue-400 flex-shrink-0" />
-              <span className="text-sm">Medak District, Telangana</span>
+              <span className="text-sm">Medchal District, Telangana</span>
             </div>
             <div className="flex items-center space-x-3">
               <Mail size={16} className="text-blue-400 flex-shrink-0" />
