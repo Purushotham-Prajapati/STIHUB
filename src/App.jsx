@@ -17,6 +17,9 @@ import gallery3 from './assets/gallery-3.jpg';
 import gallery4 from './assets/gallery-4.jpg';
 import gallery5 from './assets/team.jpeg';
 import gallery6 from './assets/core.jpeg';
+import gallery7 from './assets/gallery-5.jpg';
+import gallery8 from './assets/gallery-6.jpg';
+import gallery9 from './assets/gallery-7.jpg';
 
 // Community Engagement Icons
 import communityIcon from './assets/community.png';
@@ -39,7 +42,7 @@ const navLinks = [
   { name: 'Contact', href: '#contact', icon: Mail },
 ];
 
-const galleryImages = [gallery1, gallery5, gallery6, gallery2, gallery3, gallery4];
+const galleryImages = [gallery1, gallery5, gallery6, gallery2, gallery3, gallery4,gallery9,gallery7,gallery8];
 
 const engagementOutcomes = [
   { 
