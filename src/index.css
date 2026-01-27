@@ -1,1 +1,21 @@
 @import "tailwindcss";
+
+@layer base {
+    html {
+        font-family: 'Check Inter', system-ui, sans-serif;
+        scroll-behavior: smooth;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply tracking-tight text-slate-900;
+    }
+
+    h1 {
+        @apply font-extrabold;
+    }
+}

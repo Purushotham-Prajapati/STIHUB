@@ -5,8 +5,9 @@ import {
 
 // Import images
 import dstLogo from '../assets/dst.jpg';
-import vnrLogo from '../assets/vnr1.jpg';
+import vnrLogo from '../assets/vnr.png';
 import pareaImg from '../assets/parea.jpg';
+import vnrpng from '../assets/vnr-logo.png';
 
 // Gallery Images
 import gallery1 from '../assets/gallery-1.jpg';
@@ -34,7 +35,8 @@ import img4 from '../assets/img4.jpg';
 export const logos = {
     dst: dstLogo,
     vnr: vnrLogo,
-    parea: pareaImg
+    parea: pareaImg,
+    vnrpng: vnrpng
 };
 
 export const navLinks = [
@@ -50,7 +52,7 @@ export const galleryImages = [gallery1, gallery5, gallery6, gallery2, gallery3, 
 export const engagementOutcomes = [
     {
         icon: communityIcon,
-        title: 'Community Facility Centre',
+        title: 'Common Facility Centre',
         description: 'Empowering the village through collaboration',
         bgGradient: 'from-blue-500 to-purple-600',
         stats: '5+ Centers'
@@ -86,14 +88,13 @@ export const livelihoodCapitals = [
 ];
 
 export const teamMembers = {
-    pi: { name: 'Dr. Alapati Mallika', role: 'Professor, Dept. of Civil Engineering, VNRVJIET', avatar: '👩‍🔬' },
     coInvestigators: [
+        { name: 'Dr. Alapati Mallika', role: 'Professor, Dept. of Civil Engineering, VNRVJIET', avatar: '👩‍🔬' },
         { name: 'Dr. Padmavathi Papolu', role: 'Assistant Professor, Chemistry, VNRVJIET', avatar: '👩‍🔬' },
         { name: 'Dr. K Anuradha', role: 'Professor of EEE, VNRVJIET', avatar: '👩‍🔬' },
         { name: 'Dr. Myneni Madhu Bala', role: 'Professor of CSE, VNRVJIET', avatar: '👩‍🔬' },
         { name: 'Dr. B. Ashok', role: 'Sr. Assistant Professor of Physics, VNRVJIET', avatar: '👨‍🔬' },
         { name: 'Dr. B. Prathyusha', role: 'Assistant Professor of MBA, VNRVJIET', avatar: '👩‍🔬' },
-        { name: 'Dr. K Madhavi', role: 'Assistant Professor, Chemistry, VNRVJIET', avatar: '👩‍🔬' },
         { name: 'Mr. K. Veerendra Gopi', role: 'Assistant Professor, CE, VNRVJIET', avatar: '👨‍🔬' },
         { name: 'Mr. R. Ramu', role: 'Assistant Professor, AE, VNRVJIET', avatar: '👨‍🔬' },
         { name: 'Dr. D. Ramesh Reddy', role: 'Assistant Professor, ECE, VNRVJIET', avatar: '👨‍🔬' },
@@ -105,7 +106,7 @@ export const teamMembers = {
 export const newsItems = [
     {
         title: 'Recruitment Notification for Project Staff (Adv No. DST-STI H/01)',
-        date: 'Oct 26, 2023',
+        date: 'July 2023',
         href: 'adv-man-power.pdf',
         category: 'Recruitment',
         excerpt: 'New positions available for project staff members.',
@@ -114,7 +115,7 @@ export const newsItems = [
     },
     {
         title: 'Launch of Science, Technology, and Innovation Hub',
-        date: 'Sep 15, 2023',
+        date: 'September 2023',
         href: '#',
         category: 'Launch',
         excerpt: 'Official inauguration of the STI Hub project.',
@@ -123,7 +124,7 @@ export const newsItems = [
     },
     {
         title: 'Community Outreach in Kowdipally Block',
-        date: 'Nov 05, 2023',
+        date: 'November 2023',
         href: '#',
         category: 'Outreach',
         excerpt: 'Successful community engagement program completed.',
@@ -133,7 +134,7 @@ export const newsItems = [
 ];
 
 export const projectStats = [
-    { label: 'Project Cost', value: '₹86.8 Lakhs', icon: Award },
+    { label: 'Project Cost', value: '₹ 86.8 Lakhs', icon: Award },
     { label: 'Duration', value: '3 Years', icon: Calendar },
     { label: 'Communities', value: '15+', icon: Users },
     { label: 'Technologies', value: '10+', icon: Lightbulb },

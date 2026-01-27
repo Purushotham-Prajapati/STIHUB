@@ -48,14 +48,14 @@ const Gallery = () => {
 
                 <button
                     onClick={prevSlide}
-                    className="absolute top-1/2 left-2 md:left-6 transform -translate-y-1/2 bg-black/40 md:bg-white/20 backdrop-blur-sm text-white p-2 md:p-4 rounded-full opacity-70 md:opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white/30 hover:scale-110"
+                    className="absolute top-1/2 left-2 md:left-6 transform -translate-y-1/2 bg-black/40 md:bg-white/20 backdrop-blur-sm text-white p-2 md:p-4 rounded-full opacity-70 md:opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white/30 hover:scale-105"
                 >
                     <ChevronLeft size={20} className="md:w-6 md:h-6" />
                 </button>
 
                 <button
                     onClick={nextSlide}
-                    className="absolute top-1/2 right-2 md:right-6 transform -translate-y-1/2 bg-black/40 md:bg-white/20 backdrop-blur-sm text-white p-2 md:p-4 rounded-full opacity-70 md:opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white/30 hover:scale-110"
+                    className="absolute top-1/2 right-2 md:right-6 transform -translate-y-1/2 bg-black/40 md:bg-white/20 backdrop-blur-sm text-white p-2 md:p-4 rounded-full opacity-70 md:opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white/30 hover:scale-105"
                 >
                     <ChevronRight size={20} className="md:w-6 md:h-6" />
                 </button>
@@ -67,8 +67,8 @@ const Gallery = () => {
                                 key={i}
                                 onClick={() => setCurrent(i)}
                                 className={`transition-all duration-300 rounded-full ${current === i
-                                        ? 'w-8 md:w-12 h-2 md:h-3 bg-white'
-                                        : 'w-2 md:w-3 h-2 md:h-3 bg-white/50 hover:bg-white/80'
+                                    ? 'w-8 md:w-12 h-2 md:h-3 bg-white'
+                                    : 'w-2 md:w-3 h-2 md:h-3 bg-white/50 hover:bg-white/80'
                                     }`}
                             />
                         ))}

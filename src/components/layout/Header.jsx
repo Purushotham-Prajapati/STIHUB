@@ -17,21 +17,21 @@ const Header = () => {
 
     return (
         <header className={`fixed  top-0 w-full z-50 transition-all duration-300 ${isScrolled
-                ? 'bg-white/95 backdrop-blur-lg shadow-lg py-2'
-                : 'bg-white/80 backdrop-blur-md py-4'
+            ? 'bg-white/95 backdrop-blur-lg shadow-lg py-2'
+            : 'bg-white/80 backdrop-blur-md py-4'
             }`}>
-            <div className="container mx-auto px-6 md:px-12 lg:px-16 max-w-7xl flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                    <a href='https://vnrvjiet.ac.in/' target='_blank' rel="noreferrer"><img src={logos.vnr} alt="VNRVJIET Logo" className="h-12 w-auto object-contain ml-2 rounded-lg shadow-sm" /></a>
-                    <div className="flex flex-col -m-r-2">
-                        <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <div className="container mx-auto px-6 md:px-2 max-w-7xl flex items-center justify-between">
+                <div className="flex items-center gap-2 justify-center">
+                    <a href='https://vnrvjiet.ac.in/' target='_blank' rel="noreferrer"><img src={logos.vnr} alt="VNRVJIET Logo" className="h-14 w-auto object-contain rounded-md" /></a>
+                    <div className="hidden md:flex border-l border-gray-300 pl-4 h-10 flex-col w-80 justify-center">
+                        <h1 className="text-xl md:text-2xl font-bold text-blue-900 tracking-tight">
                             STI HUB
                         </h1>
-                        <p className="hidden lg:block text-xs text-gray-600 max-w-xs leading-tight">
+                        <p className="text-[10px] md:text-xs text-gray-600 font-medium tracking-wide uppercase">
                             SEED, DST – VNR Vignana Jyothi Institute of Engineering and Technology
                         </p>
                     </div>
-                    <img src={logos.dst} alt="DST Logo" className=" -ml-2 h-12 w-12 object-contain rounded-lg shadow-sm" />
+                    <img src={logos.dst} alt="DST Logo" className="h-14 w-auto object-contain rounded-md" />
                 </div>
 
                 {/* Desktop Navigation */}
