@@ -1,23 +1,29 @@
 
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
 // Layout
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 
-// Sections
-import Hero from './components/sections/Hero';
-import Gallery from './components/sections/Gallery';
-import AboutProject from './components/sections/AboutProject';
-import CommunityEngagement from './components/sections/CommunityEngagement';
-import LivelihoodCapitals from './components/sections/LivelihoodCapitals';
-import Team from './components/sections/Team';
-import News from './components/sections/News';
-import Contact from './components/sections/Contact';
+// Pages
+import Home from './pages/Home';
+import GalleryPage from './pages/GalleryPage';
 
 // UI
 import ScrollToTop from './components/ui/ScrollToTop';
 import Loading from './components/ui/Loading';
+
+// Wrapper to handle scroll to top on route change
+const PageWrapper = ({ children }) => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return children;
+};
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -139,11 +145,17 @@ function App() {
       rootMargin: '0px 0px -50px 0px'
     });
 
-    const animatedElements = document.querySelectorAll('.animate-on-scroll');
-    animatedElements.forEach((el) => observer.observe(el));
+    const checkForElements = setInterval(() => {
+      const animatedElements = document.querySelectorAll('.animate-on-scroll');
+      if (animatedElements.length > 0) {
+        animatedElements.forEach((el) => observer.observe(el));
+        clearInterval(checkForElements);
+      }
+    }, 100);
 
     return () => {
-      animatedElements.forEach((el) => observer.unobserve(el));
+      clearInterval(checkForElements);
+      // Clean up observer if needed
     };
   }, [isLoading]);
 
@@ -152,21 +164,21 @@ function App() {
   }
 
   return (
-    <div className="bg-white font-sans text-gray-700 overflow-x-hidden">
-      <Header />
-      <main>
-        <Hero />
-        <Gallery />
-        <AboutProject />
-        <CommunityEngagement />
-        <LivelihoodCapitals />
-        <Team />
-        <News />
-        <Contact />
-      </main>
-      <Footer />
-      <ScrollToTop />
-    </div>
+    <Router>
+      <div className="bg-white font-sans text-gray-700 overflow-x-hidden">
+        <Header />
+        <main>
+          <PageWrapper>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/gallery" element={<GalleryPage />} />
+            </Routes>
+          </PageWrapper>
+        </main>
+        <Footer />
+        <ScrollToTop />
+      </div>
+    </Router>
   );
 }
 

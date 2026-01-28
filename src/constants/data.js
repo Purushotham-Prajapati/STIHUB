@@ -1,6 +1,7 @@
 
 import {
-    Building, FileText, Target, Users, Mail, Award, Calendar, Lightbulb
+    Building, FileText, Target, Users, Mail, Award, Calendar, Lightbulb,
+    ImageIcon
 } from 'lucide-react';
 
 // Import images
@@ -41,8 +42,8 @@ export const logos = {
 
 export const navLinks = [
     { name: 'Home', href: '#home', icon: Building },
+    { name: 'Gallery', href: '/gallery', icon: ImageIcon },
     { name: 'About', href: '#about', icon: FileText },
-    { name: 'Outcomes', href: '#outcomes', icon: Target },
     { name: 'Team', href: '#team', icon: Users },
     { name: 'Contact', href: '#contact', icon: Mail },
 ];
