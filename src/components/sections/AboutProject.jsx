@@ -7,103 +7,108 @@ import AnimatedCard from '../ui/AnimatedCard';
 import { logos } from '../../constants/data';
 
 const AboutProject = () => (
-    <Section id="about">
+    <Section id="about" className="py-8">
         <SectionTitle subtitle="Transforming lives through science and technology interventions">
             About The Project
         </SectionTitle>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
-            <div className="xl:col-span-2 space-y-0 space-x-2">
-                <AnimatedCard className="bg-gradient-to-br from-blue-50/50 to-indigo-50/50 p-6 rounded-xl shadow-sm hover:shadow-md border border-blue-400/50 transition-all duration-300">
-                    <div className="flex items-start space-x-4 mb-4">
-                        <div className="bg-blue-600 p-3 rounded-2xl shadow-blue-200 shadow-lg">
-                            <Target className="text-white" size={24} />
-                        </div>
+        <div className="max-w-7xl mx-auto space-y-4">
+            {/* Top Row: Project Info & Map */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                {/* Project Details */}
+                <AnimatedCard className="lg:col-span-8 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 p-5 rounded-xl shadow-sm border border-blue-200/50">
+                    <div className="flex flex-col h-full justify-between">
                         <div>
-                            <h3 className="text-2xl font-bold text-gray-800 mb-2">Project Title</h3>
-                            <p className="text-blue-600 text-sm font-medium mb-4 bg-blue-100 px-3 py-1 rounded-full inline-block"><span className='font-bold text-md mx-1 text-blue-900 '>File No:</span>DST/SEED/TSP/STI/2023/956 (G)</p>
-                        </div>
-                    </div>
-
-                    <p className="font-medium text-gray-700 leading-relaxed text-lg mb-8">
-                        Science Technology and Innovation Hub for Development of Scheduled Tribe Community in tribal areas of
-                        <span className="font-bold text-blue-700"> Kowdipally Block, Medak District, Telangana State</span>
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                            <div className="flex items-center space-x-3 mb-3">
-                                <Award className="text-green-600" size={24} />
-                                <h4 className="text-lg font-bold text-gray-800">Project Cost</h4>
+                            <div className="flex items-start justify-between mb-3">
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-800 ">Project Title</h3>
+                                </div>
+                                <div className="bg-blue-600 p-2 rounded-lg shadow-md hidden sm:block">
+                                    <Target className="text-white" size={20} />
+                                </div>
                             </div>
-                            <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                                ₹86.8 Lakhs
+
+                            <p className="text-gray-700 leading-relaxed text-sm mb-6 md:mb-2">
+                                Science Technology and Innovation Hub for Development of Scheduled Tribe Community in tribal areas of Kowdipally Block, Medak District, Telangana State
                             </p>
                         </div>
 
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                            <div className="flex items-center space-x-3 mb-3">
-                                <Calendar className="text-purple-600" size={24} />
-                                <h4 className="text-lg font-bold text-gray-800">Duration</h4>
+                        {/* Compact Stats Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-auto md:mt-0">
+                            <div className=" md:col-span-2 bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-100 flex flex-col justify-center">
+                                <div className="flex items-center space-x-2 mb-1">
+                                    <Award className="text-green-600" size={18} />
+                                    <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">Project Cost</span>
+                                </div>
+                                <p className="text-sm font-bold text-green-700 leading-tight">
+                                    ₹ Eighty Six Lakhs Eighty Thousand Nine Hundred and Fifty Four Rupees
+                                </p>
                             </div>
-                            <p className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                3 Years
-                            </p>
+
+                            <div className="bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-100 flex flex-col justify-center">
+                                <div className="flex items-center space-x-2 mb-1">
+                                    <Calendar className="text-purple-600" size={18} />
+                                    <span className="text-xs font-bold text-gray-600 uppercase tracking-wide">Duration</span>
+                                </div>
+                                <p className="text-lg font-bold text-purple-700">3 Years</p>
+                            </div>
+                            <div className="inline-flex items-center bg-blue-100 px-3 py-1 rounded-full border border-blue-200">
+                                <span className="text-xs font-bold text-blue-900 mr-2">File No:</span>
+                                <span className="text-xs font-medium text-blue-700">DST/SEED/TSP/STI/2023/956 (G)</span>
+                            </div>
                         </div>
                     </div>
                 </AnimatedCard>
-                <div></div>
-            </div>
 
-            <div className="xl:col-span-1">
-                <AnimatedCard delay={100} className="sticky top-24 border border-green-400 rounded-2xl">
-                    <div className="bg-white p-2 rounded-[2rem] shadow-sm hover:shadow-md border border-gray-100">
-                        <div className="relative overflow-hidden rounded-[1.5rem] shadow-inner">
+                {/* Map Section */}
+                <AnimatedCard className="lg:col-span-4 h-full">
+                    <div className="bg-white p-2 rounded-xl shadow-sm border border-gray-200 h-full">
+                        <div className="relative h-full overflow-hidden rounded-lg shadow-inner min-h-[200px]">
                             <img
                                 src={logos.parea}
                                 alt="Map of the project area in Medak District"
-                                className="w-full h-auto object-cover transition-transform duration-700 hover:scale-105"
+                                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105 absolute inset-0"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                            <div className="absolute bottom-6 left-6 text-white">
-                                <div className="flex items-center space-x-2 mb-1">
-                                    <MapPin className="text-red-400" size={20} />
-                                    <h3 className="font-bold text-xl">Project Area</h3>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+                            <div className="absolute bottom-4 left-4 text-white">
+                                <div className="flex items-center space-x-2 mb-0.5">
+                                    <MapPin className="text-red-400" size={16} />
+                                    <h3 className="font-bold text-lg text-blue-300">Project Area</h3>
                                 </div>
-                                <p className="font-medium text-lg ml-7">Kowdipally Block</p>
-                                <p className="text-sm text-gray-200 ml-7">Medak District, Telangana</p>
+                                <p className="text-sm font-medium ml-6">Kowdipally Block</p>
+                                <p className="text-xs text-gray-300 ml-6">Medak District, Telangana</p>
                             </div>
                         </div>
                     </div>
                 </AnimatedCard>
             </div>
-            <div className='xl:col-span-3'>
-                <AnimatedCard delay={200} className="bg-white px-8 py-4 rounded-xl mx-1 shadow-sm hover:shadow-md border border-orange-400 w-full mb-1 " >
-                    <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
-                        <MapPin className="text-red-500" size={28} />
-                        <span>Project Objectives</span>
-                    </h3>
-                    <div className="flex flex-col space-y-4">
-                        <div className="flex items-start space-x-3 w-full">
-                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2.5 flex-shrink-0"></div>
-                            <p className="text-gray-600 flex-1">To improve the socio-economic conditions of the target population by strengthening the predominant livelihoods through Science & Technology Interventions</p>
-                        </div>
-                        <div className="flex items-start space-x-3 w-full">
-                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2.5 flex-shrink-0"></div>
-                            <p className="text-gray-600 flex-1">Skill Development and Capacity Building of target tribal population for strengthening livelihoods.</p>
-                        </div>
-                        <div className="flex items-start space-x-3 w-full">
-                            <div className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2.5 flex-shrink-0"></div>
-                            <p className="text-gray-600 flex-1">Creation of social enterprises in backyard poultry and honey bee farming technologies based on livelihood strengths</p>
-                        </div>
-                        <div className="flex items-start space-x-3 w-full">
-                            <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2.5 flex-shrink-0"></div>
-                            <p className="text-gray-600 flex-1">To improve the livelihood capitals through Science and Technology Interventions</p>
-                        </div>
+
+            {/* Bottom Row: Objectives */}
+            <AnimatedCard delay={100} className="bg-white px-6 py-5 rounded-xl shadow-sm border border-orange-200 w-full">
+                <div className="flex items-center space-x-3 mb-4  md:mb-2 border-b border-orange-100 pb-2 md:pb-0">
+                    <MapPin className="text-orange-500" size={24} />
+                    <h3 className="text-xl font-bold text-gray-800">Project Objectives</h3>
+                </div>
+
+                <div className="grid grid-cols-1 gap-0">
+                    <div className="flex items-start space-x-3 p-2 rounded-lg hover:bg-orange-50/50 transition-colors">
+                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-gray-700 text-sm leading-snug">To improve the socio-economic conditions of the target population by strengthening the predominant livelihoods through Science & Technology Interventions</p>
                     </div>
-                </AnimatedCard>
-            </div>
-            
+                    <div className="flex items-start space-x-3 p-2 rounded-lg hover:bg-orange-50/50 transition-colors">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-gray-700 text-sm leading-snug">Skill Development and Capacity Building of target tribal population for strengthening livelihoods.</p>
+                    </div>
+                    <div className="flex items-start space-x-3 p-2 rounded-lg hover:bg-orange-50/50 transition-colors">
+                        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-gray-700 text-sm leading-snug">Creation of social enterprises in backyard poultry and honey bee farming technologies based on livelihood strengths</p>
+                    </div>
+                    <div className="flex items-start space-x-3 p-2 rounded-lg hover:bg-orange-50/50 transition-colors">
+                        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-gray-700 text-sm leading-snug">To improve the livelihood capitals through Science and Technology Interventions</p>
+                    </div>
+                </div>
+            </AnimatedCard>
         </div>
     </Section>
 );

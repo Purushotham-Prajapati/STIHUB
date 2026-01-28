@@ -22,7 +22,7 @@ const Gallery = () => {
     }, [nextSlide]);
 
     return (
-        <Section className="bg-gray-50 py-6 md:py-6 md:pt-2">
+        <Section className="bg-blue-100 py-6 md:py-6 md:pt-2">
             {/* <SectionTitle subtitle="Capturing moments from our community engagement and project activities">
                 Photo Gallery
             </SectionTitle> */}
