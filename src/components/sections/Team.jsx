@@ -16,7 +16,7 @@ const Team = () => (
             <AnimatedCard delay={200} className="bg-white rounded-3xl shadow-xl p-10 py-5 mb-4 border border-indigo-100">
                 <div className="text-center mb-10">
                     <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-                        Co-Investigators
+                        Investigators
                     </h3>
                     <p className="text-gray-600">Collaborative expertise across multiple disciplines</p>
                 </div>

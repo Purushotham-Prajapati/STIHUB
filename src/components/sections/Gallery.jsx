@@ -22,12 +22,12 @@ const Gallery = () => {
     }, [nextSlide]);
 
     return (
-        <Section className="bg-gray-50 py-6 md:py-16">
-            <SectionTitle subtitle="Capturing moments from our community engagement and project activities">
+        <Section className="bg-gray-50 py-6 md:py-6 md:pt-2">
+            {/* <SectionTitle subtitle="Capturing moments from our community engagement and project activities">
                 Photo Gallery
-            </SectionTitle>
+            </SectionTitle> */}
 
-            <div className="relative w-full max-w-5xl mx-auto overflow-hidden rounded-2xl md:rounded-3xl shadow-xl md:shadow-2xl group bg-white p-2">
+            <div className="relative w-full max-w-2xl mx-auto overflow-hidden rounded-2xl md:rounded-3xl shadow-xl md:shadow-2xl group bg-white p-2">
                 <div
                     className="flex transition-transform ease-out duration-700"
                     style={{ transform: `translateX(-${current * 100}%)` }}
