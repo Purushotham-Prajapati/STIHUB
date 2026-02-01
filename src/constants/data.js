@@ -54,7 +54,7 @@ export const engagementOutcomes = [
     {
         icon: communityIcon,
         title: 'Common Facility Centre',
-        description: 'Empowering the village through collaboration',
+        description: 'Empowering the village through collaboration @Tuniki Village',
         bgGradient: 'from-blue-500 to-purple-600',
         stats: '5+ Centers'
     },
@@ -101,6 +101,10 @@ export const teamMembers = {
         { name: 'Dr. D. Ramesh Reddy', role: 'Assistant Professor, ECE, VNRVJIET', avatar: '👨‍🔬' },
         { name: 'Mr. D. Mahesh', role: 'DRNVJIRD (Collaborative Institution)', avatar: '👨‍🔬' },
         { name: 'Ms. P. Keerthi', role: 'DRNVJIRD (Collaborative Institution)', avatar: '👩‍🔬' },
+        { name: 'Dr. Dattesh Tamatam', role: 'Project Associate CE,VNRVJIET', avatar: '👨‍🔬' },
+        { name: 'Mr. Thota Rakesh', role: 'Field Assistant CE,VNRVJIET', avatar: '👩‍🔬' },
+        { name: 'Mr. Thangellapally Ramakrishna', role: 'Field Worker CE,VNRVJIET', avatar: '👨‍🔬' },
+
     ],
 };
 

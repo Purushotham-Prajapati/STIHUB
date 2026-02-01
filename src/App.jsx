@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 
 // Layout
 import Header from './components/layout/Header';
@@ -164,21 +164,19 @@ function App() {
   }
 
   return (
-    <Router>
-      <div className="bg-white font-sans text-gray-700 overflow-x-hidden">
-        <Header />
-        <main>
-          <PageWrapper>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/gallery" element={<GalleryPage />} />
-            </Routes>
-          </PageWrapper>
-        </main>
-        <Footer />
-        <ScrollToTop />
-      </div>
-    </Router>
+    <div className="bg-white font-sans text-gray-700 overflow-x-hidden">
+      <Header />
+      <main>
+        <PageWrapper>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/gallery" element={<GalleryPage />} />
+          </Routes>
+        </PageWrapper>
+      </main>
+      <Footer />
+      <ScrollToTop />
+    </div>
   );
 }
 
