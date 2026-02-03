@@ -18,13 +18,26 @@ const galleryItems = galleryImages.map((img, index) => ({
     date: "2023-2024"
 }));
 
+import SEO from '../components/seo/SEO';
+
 const GalleryPage = () => {
     const [selectedImageIndex, setSelectedImageIndex] = useState(null);
-    const [isLoaded, setIsLoaded] = useState(false);
 
-    useEffect(() => {
-        setIsLoaded(true);
-    }, []);
+    const gallerySchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [{
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://stihub-vnrvjiet.in"
+        }, {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Gallery",
+            "item": "https://stihub-vnrvjiet.in/gallery"
+        }]
+    };
 
     const openLightbox = (index) => {
         setSelectedImageIndex(index);
@@ -66,6 +79,12 @@ const GalleryPage = () => {
 
     return (
         <div className="pt-24 min-h-screen bg-gray-50">
+            <SEO
+                title="Gallery - Impact & Initiatives"
+                description="Visual journey of STIHUB VNRVJIET's community initiatives, training programs, and sustainable development projects."
+                url="/gallery"
+                schema={gallerySchema}
+            />
             <Section className="py-12">
                 <SectionTitle subtitle="Visual milestones of our journey in transforming lives">
                     Project Gallery

@@ -13,6 +13,7 @@ import GalleryPage from './pages/GalleryPage';
 // UI
 import ScrollToTop from './components/ui/ScrollToTop';
 import Loading from './components/ui/Loading';
+import SEO from './components/seo/SEO';
 
 // Wrapper to handle scroll to top on route change
 const PageWrapper = ({ children }) => {
@@ -165,6 +166,7 @@ function App() {
 
   return (
     <div className="bg-white font-sans text-gray-700 overflow-x-hidden">
+      <SEO />
       <Header />
       <main>
         <PageWrapper>
