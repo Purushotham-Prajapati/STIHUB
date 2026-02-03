@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 
 // Layout
 import Header from './components/layout/Header';
@@ -176,6 +177,7 @@ function App() {
       </main>
       <Footer />
       <ScrollToTop />
+      <Analytics />
     </div>
   );
 }
