@@ -84,7 +84,7 @@ export const engagementOutcomes = [
 export const livelihoodCapitals = [
     { image: img1, title: 'Backyard Poultry', description: 'Sustainable poultry farming for rural communities' },
     { image: img2, title: 'Feed and Fodder', description: 'Quality nutrition for livestock development' },
-    { image: img3, title: 'Honey Bee Farming', description: 'Sweet success through bee cultivation' },
+    { image: img3, title: 'Banjara Art', description: 'Empowering the village through collaboration' },
     { image: img4, title: 'TKS - Seed Bank', description: 'Preserving traditional knowledge and seeds' },
 ];
 
