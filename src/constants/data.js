@@ -5,47 +5,47 @@ import {
 } from 'lucide-react';
 
 // Import images
-import dstLogo from '../assets/dst.jpg';
-import vnrLogo from '../assets/vnr.png';
-import pareaImg from '../assets/parea.jpg';
-import vnrpng from '../assets/vnr-logo.png';
+import dstLogo from '../assets/dst.webp';
+import vnrLogo from '../assets/vnr.webp';
+import pareaImg from '../assets/parea.webp';
+import vnrpng from '../assets/vnr-logo.webp';
 
 // Gallery Images
-import gallery1 from '../assets/gallery-1.jpg';
-import gallery2 from '../assets/gallery-2.jpg';
-import gallery3 from '../assets/gallery-3.jpg';
-import gallery4 from '../assets/gallery-4.jpg';
-import gallery5 from '../assets/team.jpeg';
-import gallery6 from '../assets/core.jpeg';
-import gallery7 from '../assets/gallery-5.jpg';
-import gallery8 from '../assets/gallery-6.jpg';
-import gallery9 from '../assets/gallery-7.jpg';
-import gallery10 from '../assets/est-prgm-5.jpg';
-import gallery11 from '../assets/poul-2.jpg';
+import gallery1 from '../assets/gallery-1.webp';
+import gallery2 from '../assets/gallery-2.webp';
+import gallery3 from '../assets/gallery-3.webp';
+import gallery4 from '../assets/gallery-4.webp';
+import gallery5 from '../assets/team.webp';
+import gallery6 from '../assets/core.webp';
+import gallery7 from '../assets/gallery-5.webp';
+import gallery8 from '../assets/gallery-6.webp';
+import gallery9 from '../assets/gallery-7.webp';
+import gallery10 from '../assets/est-prgm-5.webp';
+import gallery11 from '../assets/poul-2.webp';
 
 
 // Community Engagement Icons
-import communityIcon from '../assets/community.png';
-import educationIcon from '../assets/education.png';
-import skillBasedIcon from '../assets/skillBased.png';
-import innovationIcon from '../assets/innovation.png';
+import communityIcon from '../assets/community.webp';
+import educationIcon from '../assets/education.webp';
+import skillBasedIcon from '../assets/skillBased.webp';
+import innovationIcon from '../assets/innovation.webp';
 
 // Livelihood Capitals Images
-import img1 from '../assets/img1.jpg';
-import img2 from '../assets/img2.jpg';
-import img3 from '../assets/img3.jpg';
-import img4 from '../assets/img4.jpg';
+import img1 from '../assets/img1.webp';
+import img2 from '../assets/img2.webp';
+import img3 from '../assets/img3.webp';
+import img4 from '../assets/img4.webp';
 
 // GalleryPage Images
-import gal1 from '../assets/est-prgm-1.jpg';
-import gal2 from '../assets/est-prgm-2.jpg';
-import gal3 from '../assets/est-prgm-3.jpg';
-import gal4 from '../assets/est-prgm-4.jpg';
-import gal5 from '../assets/est-prgm-5.jpg';
-import gal6 from '../assets/poul-1.jpg';
-import gal7 from '../assets/poul-2.jpg';
-import gal8 from '../assets/poul-3.jpg';
-import gal9 from '../assets/poul-4.jpg';
+import gal1 from '../assets/est-prgm-1.webp';
+import gal2 from '../assets/est-prgm-2.webp';
+import gal3 from '../assets/est-prgm-3.webp';
+import gal4 from '../assets/est-prgm-4.webp';
+import gal5 from '../assets/est-prgm-5.webp';
+import gal6 from '../assets/poul-1.webp';
+import gal7 from '../assets/poul-2.webp';
+import gal8 from '../assets/poul-3.webp';
+import gal9 from '../assets/poul-4.webp';
 
 
 export const logos = {
@@ -63,9 +63,9 @@ export const navLinks = [
     { name: 'Contact', href: '#contact', icon: Mail },
 ];
 
-export const galleryCanvas = [gallery11,gallery10,gallery1, gallery5, gallery6, gallery2, gallery3, gallery4, gallery9, gallery7, gallery8];
+export const galleryCanvas = [gallery11, gallery10, gallery1, gallery5, gallery6, gallery2, gallery3, gallery4, gallery9, gallery7, gallery8];
 
-export const galleryImages = [gal1,gal2,gal3,gal4,gal5,gal6,gal7,gal8,gal9,gallery1, gallery5, gallery6, gallery2, gallery3, gallery4, gallery9, gallery7, gallery8];
+export const galleryImages = [gal1, gal2, gal3, gal4, gal5, gal6, gal7, gal8, gal9, gallery1, gallery5, gallery6, gallery2, gallery3, gallery4, gallery9, gallery7, gallery8];
 
 export const engagementOutcomes = [
     {

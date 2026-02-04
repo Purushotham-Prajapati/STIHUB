@@ -4,8 +4,8 @@ import { Award } from 'lucide-react';
 import Section from '../common/Section';
 // import { projectStats } from '../../constants/data';
 // import AnimatedCard from '../ui/AnimatedCard';
-import dstHero from '../../assets/dst-hero.png';
-import vnrpng from '../../assets/vnr-logo.png';
+import dstHero from '../../assets/dst-hero.webp';
+import vnrpng from '../../assets/vnr-logo.webp';
 const Hero = () => (
   <Section id="home" className=" py-20 lg:pt-24 lg:pb-3 md:pb-52 pt-28 pb-52 bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900 text-white relative overflow-hidden">
     {/* Background Pattern */}

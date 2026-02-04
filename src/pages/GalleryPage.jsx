@@ -7,6 +7,7 @@ import AnimatedCard from '../components/ui/AnimatedCard';
 import { galleryImages } from '../constants/data';
 
 // Extended gallery data with captions (mapping from existing simple array)
+
 const galleryItems = galleryImages.map((img, index) => ({
     id: index,
     src: img,
