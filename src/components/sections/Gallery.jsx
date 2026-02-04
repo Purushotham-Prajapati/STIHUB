@@ -3,17 +3,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Section from '../common/Section';
 import SectionTitle from '../common/SectionTitle';
-import { galleryImages } from '../../constants/data';
+import { galleryCanvas } from '../../constants/data';
 
 const Gallery = () => {
     const [current, setCurrent] = useState(0);
 
     const prevSlide = useCallback(() => {
-        setCurrent(current === 0 ? galleryImages.length - 1 : current - 1);
+        setCurrent(current === 0 ? galleryCanvas.length - 1 : current - 1);
     }, [current]);
 
     const nextSlide = useCallback(() => {
-        setCurrent(current === galleryImages.length - 1 ? 0 : current + 1);
+        setCurrent(current === galleryCanvas.length - 1 ? 0 : current + 1);
     }, [current]);
 
     useEffect(() => {
@@ -32,7 +32,7 @@ const Gallery = () => {
                     className="flex transition-transform ease-out duration-700"
                     style={{ transform: `translateX(-${current * 100}%)` }}
                 >
-                    {galleryImages.map((img, i) => (
+                    {galleryCanvas.map((img, i) => (
                         <div key={i} className="w-full flex-shrink-0 relative">
                             <div className="aspect-[4/3] md:aspect-[16/9] relative">
                                 <img
@@ -62,7 +62,7 @@ const Gallery = () => {
 
                 <div className="absolute bottom-3 md:bottom-6 left-1/2 transform -translate-x-1/2">
                     <div className="flex items-center justify-center gap-2 md:gap-3">
-                        {galleryImages.map((_, i) => (
+                        {galleryCanvas.map((_, i) => (
                             <button
                                 key={i}
                                 onClick={() => setCurrent(i)}

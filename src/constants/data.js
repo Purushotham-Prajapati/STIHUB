@@ -20,6 +20,9 @@ import gallery6 from '../assets/core.jpeg';
 import gallery7 from '../assets/gallery-5.jpg';
 import gallery8 from '../assets/gallery-6.jpg';
 import gallery9 from '../assets/gallery-7.jpg';
+import gallery10 from '../assets/est-prgm-5.jpg';
+import gallery11 from '../assets/poul-2.jpg';
+
 
 // Community Engagement Icons
 import communityIcon from '../assets/community.png';
@@ -32,6 +35,18 @@ import img1 from '../assets/img1.jpg';
 import img2 from '../assets/img2.jpg';
 import img3 from '../assets/img3.jpg';
 import img4 from '../assets/img4.jpg';
+
+// GalleryPage Images
+import gal1 from '../assets/est-prgm-1.jpg';
+import gal2 from '../assets/est-prgm-2.jpg';
+import gal3 from '../assets/est-prgm-3.jpg';
+import gal4 from '../assets/est-prgm-4.jpg';
+import gal5 from '../assets/est-prgm-5.jpg';
+import gal6 from '../assets/poul-1.jpg';
+import gal7 from '../assets/poul-2.jpg';
+import gal8 from '../assets/poul-3.jpg';
+import gal9 from '../assets/poul-4.jpg';
+
 
 export const logos = {
     dst: dstLogo,
@@ -48,7 +63,9 @@ export const navLinks = [
     { name: 'Contact', href: '#contact', icon: Mail },
 ];
 
-export const galleryImages = [gallery1, gallery5, gallery6, gallery2, gallery3, gallery4, gallery9, gallery7, gallery8];
+export const galleryCanvas = [gallery11,gallery10,gallery1, gallery5, gallery6, gallery2, gallery3, gallery4, gallery9, gallery7, gallery8];
+
+export const galleryImages = [gal1,gal2,gal3,gal4,gal5,gal6,gal7,gal8,gal9,gallery1, gallery5, gallery6, gallery2, gallery3, gallery4, gallery9, gallery7, gallery8];
 
 export const engagementOutcomes = [
     {
