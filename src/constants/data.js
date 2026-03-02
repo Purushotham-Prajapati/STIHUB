@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 
 // Import images
-import dstLogo from '../assets/dst.webp';
+import dstLogo from '../assets/dst.jpg';
 import vnrLogo from '../assets/vnr.webp';
 import pareaImg from '../assets/parea.webp';
 import vnrpng from '../assets/vnr-logo.webp';

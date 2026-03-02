@@ -21,20 +21,46 @@ const Team = () => (
                     <p className="text-gray-600">Collaborative expertise across multiple disciplines</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {teamMembers.coInvestigators.map((member, index) => (
-                        <div key={index} className="bg-gradient-to-br from-gray-50 to-indigo-50 px-6 py-3 rounded-2xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                            <div className="flex items-start space-x-4">
-                                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-lg w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
-                                    {member.avatar}
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-gray-800 mb-1 leading-tight">{member.name}</h4>
-                                    <p className="text-sm text-gray-600 leading-relaxed">{member.role}</p>
+                <div className="space-y-12">
+                    {/* First Group: Faculty Investigators */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {teamMembers.coInvestigators.slice(0, 11).map((member, index) => (
+                            <div key={index} className="bg-gradient-to-br from-gray-50 to-indigo-50 px-6 py-3 rounded-2xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                                <div className="flex items-start space-x-4">
+                                    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-lg w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                                        {member.avatar}
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="font-semibold text-gray-800 mb-1 leading-tight">{member.name}</h4>
+                                        <p className="text-sm text-gray-600 leading-relaxed">{member.role}</p>
+                                    </div>
                                 </div>
                             </div>
+                        ))}
+                    </div>
+
+                    {/* Second Group: Project Staff (Requested in single line) */}
+                    <div className="border-t border-indigo-50">
+                        <div className="text-center mb-8">
+                            <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">Staff</h3>
+                            <p className="text-sm text-gray-500">Dedicated field and project support</p>
                         </div>
-                    ))}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {teamMembers.coInvestigators.slice(11).map((member, index) => (
+                                <div key={index} className="bg-gradient-to-br from-indigo-50/50 to-purple-50/50 border border-indigo-100/50 px-6 py-3 rounded-2xl hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                                    <div className="flex items-start space-x-4">
+                                        <div className="bg-gradient-to-br from-purple-500 to-indigo-600 text-white text-lg w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                                            {member.avatar}
+                                        </div>
+                                        <div className="flex-1">
+                                            <h4 className="font-semibold text-gray-800 mb-1 leading-tight">{member.name}</h4>
+                                            <p className="text-sm text-gray-600 leading-relaxed">{member.role}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </AnimatedCard>
         </div>
