@@ -33,8 +33,8 @@ const GalleryPage = () => {
         const fetchGalleryData = async () => {
             try {
                 const [galleryRes, sectionsRes] = await Promise.all([
-                    axios.get('http://localhost:5000/api/gallery'),
-                    axios.get('http://localhost:5000/api/sections?targetPage=gallery')
+                    axios.get(import.meta.env.PROD ? '/api/gallery' : 'http://localhost:5000/api/gallery'),
+                    axios.get(import.meta.env.PROD ? '/api/sections?targetPage=gallery' : 'http://localhost:5000/api/sections?targetPage=gallery')
                 ]);
                 setGalleryItems(galleryRes.data);
                 setDynamicSections(sectionsRes.data);
