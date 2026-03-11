@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import ImageKit from 'imagekit';
 import mongoose from 'mongoose';
-import GalleryItem from './models/GalleryItem.js';
+import GalleryItem from '../src/models/GalleryItem.js';
 
 const imagekit = new ImageKit({
     publicKey: process.env.IMAGEKIT_PUBLIC_KEY,

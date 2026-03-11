@@ -4,7 +4,7 @@ import Imagekit from '@imagekit/nodejs';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import GalleryItem from './models/GalleryItem.js';
+import GalleryItem from '../src/models/GalleryItem.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,7 +16,7 @@ const imagekit = new Imagekit({
     privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
 });
 
-const imagesDir = path.join(__dirname, '../frontend/src/assets');
+const imagesDir = path.join(__dirname, '../../frontend/src/assets');
 
 const galleryItemsData = Array.from({ length: 18 }).map((_, i) => ({
     title: `Community Initiative ${i + 1}`,

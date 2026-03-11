@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import mongoose from 'mongoose';
-import GalleryItem from './models/GalleryItem.js';
+import GalleryItem from '../src/models/GalleryItem.js';
 
 await mongoose.connect(process.env.MONGODB_URI);
 const items = await GalleryItem.find({}).limit(5);

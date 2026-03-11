@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import { getGalleryItems, uploadGalleryItem, updateGalleryItem, deleteGalleryItem } from '../controllers/galleryController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() }); // Store in memory for ImageKit upload
