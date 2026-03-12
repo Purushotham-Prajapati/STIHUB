@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut, Image as ImageIcon, Layout, PlusCircle } from 'lucide-react';
 import GalleryManager from './GalleryManager';
 import SectionManager from './SectionManager';
+import SliderManager from './SliderManager';
 
 const Dashboard = () => {
     const { logout, user } = useAuth();
@@ -45,6 +46,13 @@ const Dashboard = () => {
                             Gallery Manager
                         </button>
                         <button
+                            onClick={() => setActiveTab('slider')}
+                            className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-colors ${activeTab === 'slider' ? 'bg-blue-600 text-white font-medium shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
+                        >
+                            <PlusCircle size={20} />
+                            Slider Management
+                        </button>
+                        <button
                             onClick={() => setActiveTab('sections')}
                             className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-colors ${activeTab === 'sections' ? 'bg-blue-600 text-white font-medium shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
                         >
@@ -57,8 +65,10 @@ const Dashboard = () => {
                 {/* Main Content Area */}
                 <div className="flex-grow bg-white rounded-xl shadow-sm border border-gray-100 p-6 min-h-[600px]">
                     {activeTab === 'gallery' && <GalleryManager />}
+                    {activeTab === 'slider' && <SliderManager />}
                     {activeTab === 'sections' && <SectionManager />}
                 </div>
+
 
             </div>
         </div>

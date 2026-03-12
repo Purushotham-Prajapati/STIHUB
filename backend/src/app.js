@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes.js';
 import galleryRoutes from './routes/galleryRoutes.js';
 import sectionRoutes from './routes/sectionRoutes.js';
+import sliderRoutes from './routes/sliderRoutes.js';
 
 const app = express();
 
@@ -38,6 +39,8 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/sections', sectionRoutes);
+app.use('/api/slider-items', sliderRoutes);
+
 
 // Base route
 app.get('/', (req, res) => {
