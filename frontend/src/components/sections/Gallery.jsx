@@ -2,37 +2,64 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Section from '../common/Section';
-import SectionTitle from '../common/SectionTitle';
-import { galleryCanvas } from '../../constants/data';
+import { galleryCanvas as fallbackImages } from '../../constants/data';
+import { api } from '../../context/AuthContext';
 
 const Gallery = () => {
+    const [images, setImages] = useState([]);
     const [current, setCurrent] = useState(0);
+    const [loading, setLoading] = useState(true);
 
-    const prevSlide = useCallback(() => {
-        setCurrent(current === 0 ? galleryCanvas.length - 1 : current - 1);
-    }, [current]);
-
-    const nextSlide = useCallback(() => {
-        setCurrent(current === galleryCanvas.length - 1 ? 0 : current + 1);
-    }, [current]);
+    const fetchSliderImages = async () => {
+        try {
+            const { data } = await api.get('/slider-items');
+            if (data && data.length > 0) {
+                setImages(data.map(item => item.imageUrl));
+            } else {
+                setImages(fallbackImages);
+            }
+        } catch (error) {
+            console.error('Failed to fetch slider images:', error);
+            setImages(fallbackImages);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const slideInterval = setInterval(nextSlide, 4000); // Changed to 3 seconds
+        fetchSliderImages();
+    }, []);
+
+    const prevSlide = useCallback(() => {
+        setCurrent(current === 0 ? images.length - 1 : current - 1);
+    }, [current, images.length]);
+
+    const nextSlide = useCallback(() => {
+        setCurrent(current === images.length - 1 ? 0 : current + 1);
+    }, [current, images.length]);
+
+    useEffect(() => {
+        if (images.length === 0) return;
+        const slideInterval = setInterval(nextSlide, 4000);
         return () => clearInterval(slideInterval);
-    }, [nextSlide]);
+    }, [nextSlide, images.length]);
+
+    if (loading) {
+        return (
+            <Section className="bg-blue-100 py-6 md:py-6 md:pt-2">
+                <div className="max-w-2xl mx-auto h-[400px] bg-white/50 animate-pulse rounded-3xl" />
+            </Section>
+        );
+    }
 
     return (
         <Section className="bg-blue-100 py-6 md:py-6 md:pt-2">
-            {/* <SectionTitle subtitle="Capturing moments from our community engagement and project activities">
-                Photo Gallery
-            </SectionTitle> */}
-
             <div className="relative w-full max-w-2xl mx-auto overflow-hidden rounded-2xl md:rounded-3xl shadow-xl md:shadow-2xl group bg-white p-2">
                 <div
                     className="flex transition-transform ease-out duration-700"
                     style={{ transform: `translateX(-${current * 100}%)` }}
                 >
-                    {galleryCanvas.map((img, i) => (
+                    {images.map((img, i) => (
                         <div key={i} className="w-full flex-shrink-0 relative">
                             <div className="aspect-[4/3] md:aspect-[16/9] relative">
                                 <img
@@ -62,7 +89,7 @@ const Gallery = () => {
 
                 <div className="absolute bottom-3 md:bottom-6 left-1/2 transform -translate-x-1/2">
                     <div className="flex items-center justify-center gap-2 md:gap-3">
-                        {galleryCanvas.map((_, i) => (
+                        {images.map((_, i) => (
                             <button
                                 key={i}
                                 onClick={() => setCurrent(i)}
@@ -80,3 +107,4 @@ const Gallery = () => {
 };
 
 export default Gallery;
+
