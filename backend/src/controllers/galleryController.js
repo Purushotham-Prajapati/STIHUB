@@ -1,12 +1,25 @@
 import GalleryItem from '../models/GalleryItem.js';
 import imagekit from '../config/imagekit.js';
 
+const normalizeCategory = (cat) => {
+    if (!cat) return '';
+    return cat.trim().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+};
+
 // @desc    Get all gallery items
 // @route   GET /api/gallery
 // @access  Public
 export const getGalleryItems = async (req, res) => {
     try {
-        const items = await GalleryItem.find({}).sort({ createdAt: -1 });
+        const { category } = req.query;
+        const normalizedCategory = normalizeCategory(category);
+        const query = normalizedCategory ? { 
+            category: { $regex: new RegExp(`^${normalizedCategory}$`, 'i') } 
+        } : {};
+        // If category is provided, use FIFO (oldest first), else use default LIFO (newest first)
+        const sort = normalizedCategory ? { createdAt: 1 } : { createdAt: -1 };
+        
+        const items = await GalleryItem.find(query).sort(sort);
         res.json(items);
     } catch (error) {
         console.error("Gallery fetch error:", error);
@@ -38,7 +51,7 @@ export const uploadGalleryItem = async (req, res) => {
             imageUrl: uploadResponse.url,
             imageKitFileId: uploadResponse.fileId,
             title,
-            category,
+            category: normalizeCategory(category),
             sectionName: sectionName || 'Project Gallery',
             description,
             date

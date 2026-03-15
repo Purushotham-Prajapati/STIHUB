@@ -8,6 +8,8 @@ import authRoutes from './routes/authRoutes.js';
 import galleryRoutes from './routes/galleryRoutes.js';
 import sectionRoutes from './routes/sectionRoutes.js';
 import sliderRoutes from './routes/sliderRoutes.js';
+import engagementRoutes from './routes/engagementRoutes.js';
+import newsRoutes from './routes/newsRoutes.js';
 
 const app = express();
 
@@ -40,6 +42,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/sections', sectionRoutes);
 app.use('/api/slider-items', sliderRoutes);
+app.use('/api/engagement', engagementRoutes);
+app.use('/api/news', newsRoutes);
 
 
 // Base route

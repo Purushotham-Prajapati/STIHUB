@@ -4,11 +4,17 @@ import { Trash2, Edit2, UploadCloud, X, Save, ImageIcon, CheckCircle, AlertCircl
 
 const GalleryManager = () => {
     const [items, setItems] = useState([]);
+    const [engagementCards, setEngagementCards] = useState([]);
     const [sections, setSections] = useState([]); // Dynamic sections from DB
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const fileInputRef = useRef(null);
+
+    const normalizeCategory = (cat) => {
+        if (!cat) return '';
+        return cat.trim().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    };
 
     // Shared metadata for multi-upload
     const [sharedMeta, setSharedMeta] = useState({
@@ -23,10 +29,14 @@ const GalleryManager = () => {
 
     const fetchItems = async () => {
         try {
-            const { data } = await api.get('/gallery');
-            setItems(data);
+            const [galleryRes, engagementRes] = await Promise.all([
+                api.get('/gallery'),
+                api.get('/engagement')
+            ]);
+            setItems(galleryRes.data);
+            setEngagementCards(engagementRes.data);
         } catch (error) {
-            console.error('Failed to fetch gallery items:', error);
+            console.error('Failed to fetch data:', error);
         } finally {
             setLoading(false);
         }
@@ -38,9 +48,13 @@ const GalleryManager = () => {
         api.get('/sections').then(({ data }) => setSections(data)).catch(() => { });
     }, []);
 
-    // Dynamically generate category list from existing items + defaults
+    // Dynamically generate category list from existing items + defaults + engagement cards
     const defaultCategories = ['Outreach', 'Training', 'Technology', 'Event'];
-    const allCategories = Array.from(new Set([...defaultCategories, ...items.map(i => i.category).filter(Boolean)])).sort();
+    const allCategories = Array.from(new Set([
+        ...defaultCategories.map(normalizeCategory),
+        ...items.map(i => normalizeCategory(i.category)).filter(Boolean),
+        ...engagementCards.map(c => normalizeCategory(c.category)).filter(Boolean)
+    ])).sort();
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
@@ -94,7 +108,7 @@ const GalleryManager = () => {
 
             const formData = new FormData();
             formData.append('title', entry.title);
-            formData.append('category', entry.category === 'new' ? entry.customCategory : entry.category);
+            formData.append('category', normalizeCategory(entry.category === 'new' ? entry.customCategory : entry.category));
             formData.append('sectionName', entry.sectionName || 'Project Gallery');
             formData.append('description', entry.description);
             formData.append('date', entry.date);
@@ -137,6 +151,7 @@ const GalleryManager = () => {
             if (payload.category === 'new') {
                 payload.category = payload.customCategory;
             }
+            payload.category = normalizeCategory(payload.category);
 
             await api.put(`/gallery/${id}`, payload);
             setEditingId(null);
