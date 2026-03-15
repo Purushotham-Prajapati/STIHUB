@@ -9,6 +9,12 @@ import Footer from './components/layout/Footer';
 // Pages
 import Home from './pages/Home';
 import GalleryPage from './pages/GalleryPage';
+import AdminLogin from './components/admin/AdminLogin';
+import Dashboard from './components/admin/Dashboard';
+
+// Secure Route Layer
+import PrivateRoute from './components/PrivateRoute';
+import { AuthProvider } from './context/AuthContext';
 
 // UI
 import ScrollToTop from './components/ui/ScrollToTop';
@@ -165,20 +171,28 @@ function App() {
   }
 
   return (
-    <div className="bg-white font-sans text-gray-700 overflow-x-hidden">
-      <SEO />
-      <Header />
-      <main>
-        <PageWrapper>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/gallery" element={<GalleryPage />} />
-          </Routes>
-        </PageWrapper>
-      </main>
-      <Footer />
-      <ScrollToTop />
-    </div>
+    <AuthProvider>
+      <div className="bg-white font-sans text-gray-700 overflow-x-hidden">
+        <SEO />
+        <Header />
+        <main>
+          <PageWrapper>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/gallery" element={<GalleryPage />} />
+
+              {/* Secret Admin Routes */}
+              <Route path="/sti-secure-portal" element={<AdminLogin />} />
+              <Route element={<PrivateRoute />}>
+                <Route path="/sti-admin-dashboard" element={<Dashboard />} />
+              </Route>
+            </Routes>
+          </PageWrapper>
+        </main>
+        <Footer />
+        <ScrollToTop />
+      </div>
+    </AuthProvider>
   );
 }
 
