@@ -18,7 +18,7 @@ export const getNews = async (req, res) => {
 export const createNews = async (req, res) => {
     try {
         const { title, category, date, description, link, target, order } = req.body;
-        
+
         const newNews = await NewsReport.create({
             title,
             category,

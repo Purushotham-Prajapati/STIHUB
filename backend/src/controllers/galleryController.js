@@ -13,12 +13,12 @@ export const getGalleryItems = async (req, res) => {
     try {
         const { category } = req.query;
         const normalizedCategory = normalizeCategory(category);
-        const query = normalizedCategory ? { 
-            category: { $regex: new RegExp(`^${normalizedCategory}$`, 'i') } 
+        const query = normalizedCategory ? {
+            category: { $regex: new RegExp(`^${normalizedCategory}$`, 'i') }
         } : {};
         // If category is provided, use FIFO (oldest first), else use default LIFO (newest first)
         const sort = normalizedCategory ? { createdAt: 1 } : { createdAt: -1 };
-        
+
         const items = await GalleryItem.find(query).sort(sort);
         res.json(items);
     } catch (error) {
