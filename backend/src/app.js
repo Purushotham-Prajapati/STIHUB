@@ -16,9 +16,7 @@ const app = express();
 // Security Middleware
 app.use(helmet());
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-        ? true // Allows the origin specified in the request (e.g. your vercel domain)
-        : 'http://localhost:5173',
+    origin: true,
     credentials: true
 }));
 
