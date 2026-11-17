@@ -1,4 +1,5 @@
-import { google } from 'googleapis';
+import { drive } from '@googleapis/drive';
+import { OAuth2Client, GoogleAuth } from 'google-auth-library';
 import fs from 'fs';
 import path from 'path';
 
@@ -16,23 +17,23 @@ export const getDriveClient = () => {
 
     // Prefer OAuth2 with Refresh Token (bypasses service account 0-byte quota)
     if (clientId && clientSecret && refreshToken) {
-        const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, REDIRECT_URI);
+        const oauth2Client = new OAuth2Client(clientId, clientSecret, REDIRECT_URI);
         oauth2Client.setCredentials({ refresh_token: refreshToken });
-        return google.drive({ version: 'v3', auth: oauth2Client });
+        return drive({ version: 'v3', auth: oauth2Client });
     }
 
     // Fallback: Service account
     const clientEmail = process.env.GOOGLE_DRIVE_CLIENT_EMAIL;
     const rawPrivateKey = process.env.GOOGLE_DRIVE_PRIVATE_KEY;
     if (clientEmail && rawPrivateKey) {
-        const auth = new google.auth.GoogleAuth({
+        const auth = new GoogleAuth({
             credentials: {
                 client_email: clientEmail,
                 private_key: rawPrivateKey.replace(/\\n/g, '\n'),
             },
             scopes: ['https://www.googleapis.com/auth/drive'],
         });
-        return google.drive({ version: 'v3', auth });
+        return drive({ version: 'v3', auth });
     }
 
     throw new Error('Google Drive credentials not configured. Please authorize Google Drive in .env.');
@@ -47,7 +48,7 @@ export const getOAuth2AuthUrl = () => {
     if (!clientId || !clientSecret) {
         throw new Error('GOOGLE_DRIVE_CLIENT_ID and GOOGLE_DRIVE_CLIENT_SECRET must be set in .env');
     }
-    const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, REDIRECT_URI);
+    const oauth2Client = new OAuth2Client(clientId, clientSecret, REDIRECT_URI);
     return oauth2Client.generateAuthUrl({
         access_type: 'offline',
         prompt: 'consent',
@@ -61,7 +62,7 @@ export const getOAuth2AuthUrl = () => {
 export const exchangeCodeForTokens = async (code) => {
     const clientId = process.env.GOOGLE_DRIVE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_DRIVE_CLIENT_SECRET;
-    const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, REDIRECT_URI);
+    const oauth2Client = new OAuth2Client(clientId, clientSecret, REDIRECT_URI);
     const { tokens } = await oauth2Client.getToken(code);
 
     if (tokens.refresh_token) {
