@@ -19,7 +19,7 @@ const AdminLogin = () => {
         setLoading(true);
 
         try {
-            await login(email, password);
+            await login(email.trim(), password.trim());
             navigate('/sti-admin-dashboard');
         } catch (err) {
             setError(err.response?.data?.message || 'Invalid credentials');

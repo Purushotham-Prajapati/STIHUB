@@ -7,9 +7,18 @@ import generateToken from '../utils/generateToken.js';
 export const authAdmin = async (req, res) => {
     const { email, password } = req.body;
 
-    const user = await AdminUser.findOne({ email });
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
+    }
 
-    if (user && (await user.matchPassword(password))) {
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    const user = await AdminUser.findOne({
+        email: { $regex: new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') }
+    });
+
+    if (user && (await user.matchPassword(cleanPassword))) {
         generateToken(res, user._id);
         res.json({
             _id: user._id,
