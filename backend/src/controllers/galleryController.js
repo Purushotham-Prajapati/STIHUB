@@ -4,6 +4,7 @@ import ImageKit from '@imagekit/nodejs';
 import GalleryItem from '../models/GalleryItem.js';
 import imagekit from '../config/imagekit.js';
 import {
+    getDriveClient,
     uploadFileToGoogleDrive,
     deleteFileFromGoogleDrive,
     getOAuth2AuthUrl,
@@ -144,7 +145,14 @@ export const uploadGalleryItem = async (req, res) => {
 // @access  Private
 export const getUploadStatus = async (req, res) => {
     try {
-        const { uploadId } = req.params;
+        const rawUploadId = req.params.uploadId;
+        if (!rawUploadId) {
+            return res.status(400).json({ message: 'uploadId is required' });
+        }
+        const uploadId = rawUploadId.replace(/[^a-zA-Z0-9_-]/g, '');
+        if (!uploadId) {
+            return res.status(400).json({ message: 'Invalid uploadId format' });
+        }
         const uploadDir = path.join(TEMP_CHUNKS_DIR, uploadId);
 
         if (!fs.existsSync(uploadDir)) {
@@ -170,10 +178,15 @@ export const getUploadStatus = async (req, res) => {
 // @access  Private
 export const uploadChunk = async (req, res) => {
     try {
-        const { uploadId, chunkIndex, totalChunks } = req.body;
+        const { uploadId: rawUploadId, chunkIndex, totalChunks } = req.body;
 
-        if (!uploadId || chunkIndex === undefined || !totalChunks) {
+        if (!rawUploadId || chunkIndex === undefined || !totalChunks) {
             return res.status(400).json({ message: 'Missing required chunk metadata (uploadId, chunkIndex, totalChunks)' });
+        }
+
+        const uploadId = rawUploadId.replace(/[^a-zA-Z0-9_-]/g, '');
+        if (!uploadId) {
+            return res.status(400).json({ message: 'Invalid uploadId format' });
         }
 
         if (!req.file || !req.file.buffer) {
@@ -211,9 +224,9 @@ export const uploadChunk = async (req, res) => {
 export const finalizeUpload = async (req, res) => {
     try {
         const {
-            uploadId,
+            uploadId: rawUploadId,
             totalChunks,
-            fileName,
+            fileName: rawFileName,
             title,
             category,
             description,
@@ -223,10 +236,16 @@ export const finalizeUpload = async (req, res) => {
             thumbnailBase64,
         } = req.body;
 
-        if (!uploadId || !totalChunks) {
+        if (!rawUploadId || !totalChunks) {
             return res.status(400).json({ message: 'Missing uploadId or totalChunks' });
         }
 
+        const uploadId = rawUploadId.replace(/[^a-zA-Z0-9_-]/g, '');
+        if (!uploadId) {
+            return res.status(400).json({ message: 'Invalid uploadId format' });
+        }
+
+        const fileName = path.basename(rawFileName || 'video.mp4').replace(/[^a-zA-Z0-9._-]/g, '_');
         const totalChunksInt = parseInt(totalChunks, 10);
         const uploadDir = path.join(TEMP_CHUNKS_DIR, uploadId);
 
@@ -380,7 +399,14 @@ export const finalizeUpload = async (req, res) => {
 // @access  Private
 export const cancelUpload = async (req, res) => {
     try {
-        const { uploadId } = req.params;
+        const rawUploadId = req.params.uploadId;
+        if (!rawUploadId) {
+            return res.status(400).json({ message: 'uploadId is required' });
+        }
+        const uploadId = rawUploadId.replace(/[^a-zA-Z0-9_-]/g, '');
+        if (!uploadId) {
+            return res.status(400).json({ message: 'Invalid uploadId format' });
+        }
         const uploadDir = path.join(TEMP_CHUNKS_DIR, uploadId);
 
         if (fs.existsSync(uploadDir)) {
@@ -403,15 +429,27 @@ export const addVideoByUrl = async (req, res) => {
         if (!videoUrl || !videoUrl.trim()) {
             return res.status(400).json({ message: 'Video URL is required' });
         }
+        const trimmedUrl = videoUrl.trim();
         const normCat = normalizeCategory(category);
+
+        let googleDriveFileId = '';
+        let storageProvider = 'external';
+        const driveMatch = trimmedUrl.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (driveMatch) {
+            googleDriveFileId = driveMatch[1];
+            storageProvider = 'google-drive';
+        }
+
         const newItem = await GalleryItem.create({
             imageUrl: '',
             imageKitFileId: '',
             mediaType: 'video',
-            videoUrl: videoUrl.trim(),
+            videoUrl: trimmedUrl,
             videoDuration: videoDuration || '',
             thumbnailUrl: thumbnailUrl || '',
             thumbnailKitFileId: '',
+            googleDriveFileId: googleDriveFileId || '',
+            storageProvider: storageProvider,
             title: title || 'Untitled Video',
             category: normCat || 'Outreach',
             sectionName: sectionName || 'Project Gallery',
@@ -496,7 +534,14 @@ export const updateGalleryItem = async (req, res) => {
         // 2. Handle Video-Specific fields (Duration & Video URL)
         if (item.mediaType === 'video') {
             if (videoDuration !== undefined) item.videoDuration = videoDuration.trim();
-            if (videoUrl !== undefined && videoUrl.trim()) item.videoUrl = videoUrl.trim();
+            if (videoUrl !== undefined && videoUrl.trim()) {
+                item.videoUrl = videoUrl.trim();
+                const driveMatch = item.videoUrl.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+                if (driveMatch) {
+                    item.googleDriveFileId = driveMatch[1];
+                    item.storageProvider = 'google-drive';
+                }
+            }
         }
 
         // 3. Handle Image Replacement (for photos)
@@ -644,4 +689,104 @@ export const getGoogleDriveStatus = (req, res) => {
         hasRefreshToken: Boolean(process.env.GOOGLE_DRIVE_REFRESH_TOKEN),
         folderId: process.env.GOOGLE_DRIVE_FOLDER_ID || '',
     });
+};
+
+// @desc    High-performance video streaming from Google Drive with HTTP 206 Byte-Range support
+// @route   GET /api/gallery/stream-drive/:fileId
+// @access  Public
+export const streamGoogleDriveVideo = async (req, res) => {
+    try {
+        const rawFileId = req.params.fileId;
+        if (!rawFileId || !rawFileId.trim()) {
+            return res.status(400).send('File ID required');
+        }
+
+        // Sanitize file ID to allow only safe alphanumeric characters and dashes/underscores
+        const fileId = rawFileId.replace(/[^a-zA-Z0-9_-]/g, '');
+        if (!fileId) {
+            return res.status(400).send('Invalid fileId format');
+        }
+
+        const drive = getDriveClient();
+
+        // 1. Fetch file metadata
+        const meta = await drive.files.get({
+            fileId,
+            fields: 'id, name, size, mimeType',
+            supportsAllDrives: true,
+        });
+
+        const fileSize = parseInt(meta.data.size, 10);
+        const mimeType = meta.data.mimeType || 'video/mp4';
+        const range = req.headers.range;
+
+        // Set security and media delivery headers
+        res.setHeader('Accept-Ranges', 'bytes');
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+
+        if (range) {
+            // Parse client requested byte range
+            const parts = range.replace(/bytes=/, '').split('-');
+            const start = parseInt(parts[0], 10);
+
+            // In low-bandwidth/mobile network environments, capping open-ended ranges
+            // to a 5MB buffer chunk prevents network timeouts, stalls, and excessive buffer memory
+            const CHUNK_SIZE = 5 * 1024 * 1024; // 5 MB
+            const requestedEnd = parts[1] ? parseInt(parts[1], 10) : NaN;
+            const end = !isNaN(requestedEnd)
+                ? Math.min(requestedEnd, fileSize - 1)
+                : Math.min(fileSize - 1, start + CHUNK_SIZE - 1);
+
+            if (start >= fileSize || start < 0 || end < start) {
+                res.status(416).setHeader('Content-Range', `bytes */${fileSize}`);
+                return res.end();
+            }
+
+            const chunksize = (end - start) + 1;
+
+            const driveStream = await drive.files.get(
+                { fileId, alt: 'media', supportsAllDrives: true },
+                {
+                    headers: { Range: `bytes=${start}-${end}` },
+                    responseType: 'stream'
+                }
+            );
+
+            res.writeHead(206, {
+                'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                'Content-Length': chunksize,
+                'Content-Type': mimeType,
+            });
+
+            driveStream.data.pipe(res);
+
+            // Clean up upstream connection when client disconnects or skips
+            req.on('close', () => {
+                try { driveStream.data.destroy(); } catch (e) {}
+            });
+        } else {
+            // Full stream (for initial meta or direct downloads)
+            const driveStream = await drive.files.get(
+                { fileId, alt: 'media', supportsAllDrives: true },
+                { responseType: 'stream' }
+            );
+
+            res.writeHead(200, {
+                'Content-Length': fileSize,
+                'Content-Type': mimeType,
+            });
+
+            driveStream.data.pipe(res);
+
+            req.on('close', () => {
+                try { driveStream.data.destroy(); } catch (e) {}
+            });
+        }
+    } catch (err) {
+        console.error('Stream Google Drive video error:', err.message);
+        if (!res.headersSent) {
+            res.status(500).send('Error streaming video: ' + err.message);
+        }
+    }
 };

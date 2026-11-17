@@ -16,7 +16,9 @@ import { getGoogleAuthUrl, googleOAuthCallback } from './controllers/galleryCont
 const app = express();
 
 // Security Middleware
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(cors({
     origin: process.env.NODE_ENV === 'production'
         ? true // Allows the origin specified in the request (e.g. your vercel domain)
@@ -29,10 +31,11 @@ const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 10000, // 10,000 requests per 15 minutes to support chunked file uploads & admin use
     skip: (req) => {
-        // Always bypass rate limiter for file upload chunks and status checks
+        // Always bypass rate limiter for file upload chunks, streaming and status checks
         return req.originalUrl?.includes('/gallery/upload-') ||
                req.originalUrl?.includes('/gallery/cancel-upload') ||
-               req.originalUrl?.includes('/gallery/finalize-upload');
+               req.originalUrl?.includes('/gallery/finalize-upload') ||
+               req.originalUrl?.includes('/gallery/stream-drive');
     },
     message: 'Too many requests from this IP, please try again after 15 minutes'
 });

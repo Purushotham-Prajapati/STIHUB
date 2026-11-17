@@ -12,7 +12,8 @@ import {
     addVideoByUrl,
     getGoogleAuthUrl,
     googleOAuthCallback,
-    getGoogleDriveStatus
+    getGoogleDriveStatus,
+    streamGoogleDriveVideo,
 } from '../controllers/galleryController.js';
 import { protect } from '../middlewares/authMiddleware.js';
 
@@ -25,6 +26,9 @@ router.post('/finalize-upload', protect, finalizeUpload);
 router.get('/upload-status/:uploadId', protect, getUploadStatus);
 router.post('/cancel-upload/:uploadId', protect, cancelUpload);
 router.post('/video-link', protect, addVideoByUrl);
+
+// Google Drive video streaming (Public, HTTP 206 Partial Content)
+router.get('/stream-drive/:fileId', streamGoogleDriveVideo);
 
 // Google Drive OAuth & status routes
 router.get('/google-auth-url', getGoogleAuthUrl);

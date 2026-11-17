@@ -1,23 +1,53 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ZoomIn, PlayCircle, Video } from 'lucide-react';
+import {
+    X,
+    ZoomIn,
+    PlayCircle,
+    Video,
+    ExternalLink,
+    ChevronLeft,
+    ChevronRight,
+    Share2,
+    Check,
+    Play,
+    Clock,
+    Calendar,
+    Film
+} from 'lucide-react';
 import axios from 'axios';
 import Section from '../components/common/Section';
 import SectionTitle from '../components/common/SectionTitle';
 import AnimatedCard from '../components/ui/AnimatedCard';
 import SEO from '../components/seo/SEO';
 import ImageCanvas from '../components/ui/ImageCanvas';
+import CustomVideoPlayer from '../components/ui/CustomVideoPlayer';
 
 const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:5000/api';
 
 const getEmbedUrl = (url) => {
     if (!url) return null;
-    // YouTube links (watch, share, embed)
+    // YouTube links (watch, share, embed) require an iframe embed
     const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
     if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1`;
-    // Google Drive links
-    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-    if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
     return null;
+};
+
+const getVideoDirectSrc = (video) => {
+    if (!video) return '';
+    // YouTube links use the iframe embedUrl instead
+    if (video.videoUrl && video.videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/)) {
+        return '';
+    }
+    // Google Drive hosted videos stream directly via backend range proxy (no transcoding wait)
+    if (video.googleDriveFileId) {
+        return `${API_BASE}/gallery/stream-drive/${video.googleDriveFileId}`;
+    }
+    const driveMatch = video.videoUrl?.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (driveMatch) {
+        return `${API_BASE}/gallery/stream-drive/${driveMatch[1]}`;
+    }
+    // Direct ImageKit / MP4 URL
+    return video.videoUrl || '';
 };
 
 const GalleryPage = () => {
@@ -26,6 +56,7 @@ const GalleryPage = () => {
     const [selectedImageIndex, setSelectedImageIndex] = useState(null);
     const [selectedVideo, setSelectedVideo] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [linkCopied, setLinkCopied] = useState(false);
     const videoRef = useRef(null);
 
     const gallerySchema = {
@@ -47,6 +78,17 @@ const GalleryPage = () => {
                 ]);
                 setGalleryItems(galleryRes.data);
                 setDynamicSections(sectionsRes.data);
+
+                // Deep-link: automatically open video modal if ?video=<id> in query params
+                const params = new URLSearchParams(window.location.search);
+                const queryVideoId = params.get('video');
+                if (queryVideoId) {
+                    const targetVid = galleryRes.data.find(item => item._id === queryVideoId && item.mediaType === 'video');
+                    if (targetVid) {
+                        setSelectedVideo(targetVid);
+                        document.body.style.overflow = 'hidden';
+                    }
+                }
             } catch (error) {
                 console.error("Error fetching gallery data", error);
             } finally {
@@ -58,6 +100,7 @@ const GalleryPage = () => {
 
     // Only image items participate in the image canvas lightbox
     const imageItems = galleryItems.filter(item => item.mediaType !== 'video');
+    const allVideos = galleryItems.filter(item => item.mediaType === 'video');
 
     const openLightbox = (globalIndex) => {
         const item = galleryItems[globalIndex];
@@ -73,14 +116,46 @@ const GalleryPage = () => {
     const openVideoModal = (item) => {
         setSelectedVideo(item);
         document.body.style.overflow = 'hidden';
+        try {
+            window.history.replaceState(null, '', `?video=${item._id}`);
+        } catch {
+            // ignore
+        }
     };
 
     const closeVideoModal = () => {
-        if (videoRef.current) {
-            videoRef.current.pause();
-        }
         setSelectedVideo(null);
         document.body.style.overflow = 'unset';
+        try {
+            window.history.replaceState(null, '', window.location.pathname);
+        } catch {
+            // ignore
+        }
+    };
+
+    // Video navigation controls
+    const currentVideoIdx = selectedVideo ? allVideos.findIndex(v => v._id === selectedVideo._id) : -1;
+    const handlePrevVideo = () => {
+        if (allVideos.length <= 1) return;
+        const prevIdx = (currentVideoIdx - 1 + allVideos.length) % allVideos.length;
+        openVideoModal(allVideos[prevIdx]);
+    };
+
+    const handleNextVideo = () => {
+        if (allVideos.length <= 1) return;
+        const nextIdx = (currentVideoIdx + 1) % allVideos.length;
+        openVideoModal(allVideos[nextIdx]);
+    };
+
+    const handleShareVideo = () => {
+        if (!selectedVideo) return;
+        const shareUrl = `${window.location.origin}${window.location.pathname}?video=${selectedVideo._id}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            setLinkCopied(true);
+            setTimeout(() => setLinkCopied(false), 2200);
+        }).catch(() => {
+            prompt('Copy this link to share:', shareUrl);
+        });
     };
 
     useEffect(() => {
@@ -100,6 +175,7 @@ const GalleryPage = () => {
     );
 
     const embedUrl = selectedVideo ? getEmbedUrl(selectedVideo.videoUrl) : null;
+    const directVideoSrc = selectedVideo ? getVideoDirectSrc(selectedVideo) : null;
 
     return (
         <div className="pt-24 min-h-screen bg-gray-50">
@@ -236,11 +312,18 @@ const GalleryPage = () => {
                     const isProjectGallery = section.isStatic;
 
                     if (isProjectGallery && sectionImages.length === 0 && galleryItems.length > 0) return null;
+                    if (!isProjectGallery && sectionImages.length === 0 && !section.content) return null;
+
+                    const sectionSubtitle = isProjectGallery
+                        ? "Visual milestones of our journey in transforming lives"
+                        : section.title.toLowerCase().includes('video')
+                            ? "Watch our community initiatives, impact stories, and field demonstrations"
+                            : (section.subtitle || "Updates & Initiatives");
 
                     return (
                         <Section key={section._id} className={idx === 0 ? "pt-12 pb-4" : "py-8"}>
                             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                                <SectionTitle subtitle={isProjectGallery ? "Visual milestones of our journey in transforming lives" : "Updates"}>
+                                <SectionTitle subtitle={sectionSubtitle}>
                                     {section.title}
                                 </SectionTitle>
                                 {section.content && (
@@ -262,17 +345,19 @@ const GalleryPage = () => {
                     );
                 }).filter(Boolean).concat(
                     Object.entries(groups).map(([sectionLabel, images]) => (
-                        <Section key={sectionLabel} className="py-8">
-                            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                                <div className="flex items-center gap-4 mb-6">
-                                    <h3 className="text-xl font-bold text-gray-800 whitespace-nowrap">{sectionLabel}</h3>
-                                    <div className="flex-1 h-px bg-gradient-to-r from-blue-200 to-transparent" />
-                                    <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded-full">{images.length} item{images.length !== 1 ? 's' : ''}</span>
+                        images.length > 0 && (
+                            <Section key={sectionLabel} className="py-8">
+                                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                    <div className="flex items-center gap-4 mb-6">
+                                        <h3 className="text-xl font-bold text-gray-800 whitespace-nowrap">{sectionLabel}</h3>
+                                        <div className="flex-1 h-px bg-gradient-to-r from-blue-200 to-transparent" />
+                                        <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded-full">{images.length} item{images.length !== 1 ? 's' : ''}</span>
+                                    </div>
+                                    {renderMediaGrid(images)}
                                 </div>
-                                {renderMediaGrid(images)}
-                            </div>
-                        </Section>
-                    ))
+                            </Section>
+                        )
+                    )).filter(Boolean)
                 );
             })()}
 
@@ -302,10 +387,10 @@ const GalleryPage = () => {
                         <X size={28} />
                     </button>
 
-                    <div className="relative w-full max-w-7xl max-h-[92vh] flex flex-col lg:flex-row bg-gray-900 rounded-2xl overflow-hidden shadow-2xl mx-4">
+                    <div className="relative w-full max-w-7xl max-h-[94vh] flex flex-col lg:flex-row bg-gray-900 rounded-2xl overflow-hidden shadow-2xl mx-4 border border-white/10">
 
                         {/* Video player or Embed */}
-                        <div className="flex-grow flex items-center justify-center bg-black lg:w-3/4 min-h-[50vh] lg:min-h-[75vh]">
+                        <div className="relative flex-grow flex items-center justify-center bg-black lg:w-3/4 min-h-[50vh] lg:min-h-[75vh]">
                             {embedUrl ? (
                                 <iframe
                                     src={embedUrl}
@@ -315,55 +400,152 @@ const GalleryPage = () => {
                                     allowFullScreen
                                 />
                             ) : (
-                                <video
-                                    ref={videoRef}
-                                    src={selectedVideo.videoUrl}
-                                    controls
-                                    autoPlay
-                                    playsInline
-                                    controlsList="nodownload"
-                                    className="max-w-full max-h-[75vh] w-full object-contain focus:outline-none"
-                                    onContextMenu={(e) => e.preventDefault()}
-                                >
-                                    Your browser does not support HTML5 video.
-                                </video>
+                                <CustomVideoPlayer
+                                    key={selectedVideo._id}
+                                    src={directVideoSrc}
+                                    poster={selectedVideo.thumbnailUrl || undefined}
+                                    title={selectedVideo.title}
+                                    autoPlay={true}
+                                    onEnded={handleNextVideo}
+                                    className="w-full h-full min-h-[50vh] lg:min-h-[75vh]"
+                                />
+                            )}
+
+                            {/* Previous & Next overlay buttons */}
+                            {allVideos.length > 1 && (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); handlePrevVideo(); }}
+                                        className="absolute left-3 top-1/2 -translate-y-1/2 z-30 p-2.5 rounded-full bg-black/60 hover:bg-black/85 text-white/80 hover:text-white backdrop-blur-md transition-all shadow-xl hover:scale-110 active:scale-95"
+                                        title="Previous Video"
+                                    >
+                                        <ChevronLeft size={24} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); handleNextVideo(); }}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 z-30 p-2.5 rounded-full bg-black/60 hover:bg-black/85 text-white/80 hover:text-white backdrop-blur-md transition-all shadow-xl hover:scale-110 active:scale-95"
+                                        title="Next Video"
+                                    >
+                                        <ChevronRight size={24} />
+                                    </button>
+                                </>
                             )}
                         </div>
 
-                        {/* Sidebar info */}
-                        <div className="lg:w-1/4 bg-gray-900 border-l border-gray-800 p-8 flex flex-col justify-between overflow-y-auto max-h-[35vh] lg:max-h-none">
-                            <div>
-                                <div className="flex items-center gap-3 mb-4 flex-wrap">
-                                    <span className="inline-flex items-center gap-1.5 text-sm font-bold tracking-wider uppercase text-blue-400">
-                                        <Video size={16} />
-                                        {selectedVideo.category}
-                                    </span>
-                                    <span className="px-2 py-0.5 bg-blue-600/80 text-white text-[10px] font-bold uppercase tracking-wider rounded-full">
-                                        VIDEO
-                                    </span>
+                        {/* Sidebar: Details & Playlist */}
+                        <div className="lg:w-1/4 bg-gray-900 border-l border-gray-800 p-6 flex flex-col justify-between overflow-y-auto max-h-[42vh] lg:max-h-none scrollbar-thin">
+                            <div className="space-y-4">
+                                {/* Header badges */}
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-2.5 py-1 bg-blue-600/90 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm flex items-center gap-1">
+                                            <Video size={11} /> {selectedVideo.category}
+                                        </span>
+                                        <span className="text-[11px] font-bold text-gray-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded">
+                                            {selectedVideo.sectionName || 'Videos'}
+                                        </span>
+                                    </div>
+
+                                    {/* Share Button */}
+                                    <button
+                                        type="button"
+                                        onClick={handleShareVideo}
+                                        className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white transition-all shadow-sm"
+                                        title="Share Direct Video Link"
+                                    >
+                                        {linkCopied ? (
+                                            <>
+                                                <Check size={13} className="text-green-400" />
+                                                <span className="text-green-400 font-bold">Copied!</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Share2 size={13} />
+                                                <span>Share</span>
+                                            </>
+                                        )}
+                                    </button>
                                 </div>
 
-                                <h2 className="text-2xl font-bold text-white mb-4 leading-snug">{selectedVideo.title}</h2>
-                                <div className="w-12 h-1 bg-blue-500 rounded-full mb-6"></div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-white leading-snug">{selectedVideo.title}</h2>
+                                    <div className="w-10 h-0.5 bg-blue-500 rounded-full mt-2 mb-3"></div>
+                                    {selectedVideo.description && (
+                                        <p className="text-gray-300 text-xs leading-relaxed line-clamp-4">{selectedVideo.description}</p>
+                                    )}
+                                </div>
 
-                                {selectedVideo.description && (
-                                    <p className="text-gray-300 leading-relaxed text-base">{selectedVideo.description}</p>
-                                )}
-
-                                <div className="mt-6 pt-6 border-t border-gray-800 space-y-2">
+                                <div className="flex items-center gap-4 text-xs text-gray-400 border-y border-gray-800/80 py-2.5">
                                     {selectedVideo.date && (
-                                        <p className="text-gray-500 text-sm">📅 Date: {selectedVideo.date}</p>
+                                        <span className="flex items-center gap-1">
+                                            <Calendar size={13} className="text-gray-500" /> {selectedVideo.date}
+                                        </span>
                                     )}
                                     {selectedVideo.videoDuration && (
-                                        <p className="text-gray-500 text-sm">⏱ Duration: {selectedVideo.videoDuration}</p>
+                                        <span className="flex items-center gap-1">
+                                            <Clock size={13} className="text-gray-500" /> {selectedVideo.videoDuration}
+                                        </span>
+                                    )}
+                                    {selectedVideo.googleDriveFileId && (
+                                        <a
+                                            href={`https://drive.google.com/file/d/${selectedVideo.googleDriveFileId}/view`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="ml-auto inline-flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 transition-colors"
+                                        >
+                                            <ExternalLink size={11} /> Drive
+                                        </a>
                                     )}
                                 </div>
+
+                                {/* Up Next / More Videos Playlist */}
+                                {allVideos.length > 1 && (
+                                    <div className="pt-2">
+                                        <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+                                            <span>More Videos ({allVideos.length - 1})</span>
+                                            <span className="text-[10px] text-gray-500 font-normal">Click to play</span>
+                                        </h4>
+                                        <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-thin pr-1">
+                                            {allVideos.filter(v => v._id !== selectedVideo._id).map(v => (
+                                                <div
+                                                    key={v._id}
+                                                    onClick={() => openVideoModal(v)}
+                                                    className="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer transition-all border border-transparent hover:border-white/10 group"
+                                                >
+                                                    <div className="relative w-16 h-11 rounded-lg overflow-hidden bg-black shrink-0">
+                                                        {v.thumbnailUrl ? (
+                                                            <img src={v.thumbnailUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-gray-600">
+                                                                <Film size={16} />
+                                                            </div>
+                                                        )}
+                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <Play size={14} fill="white" className="text-white" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-xs font-semibold text-gray-200 truncate group-hover:text-blue-400 transition-colors">{v.title}</p>
+                                                        <div className="flex items-center gap-2 text-[10px] text-gray-400 mt-0.5">
+                                                            <span>{v.category}</span>
+                                                            {v.videoDuration && <span>• {v.videoDuration}</span>}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="mt-8 p-3 bg-white/5 rounded-xl border border-white/10">
-                                <p className="text-xs text-gray-500 leading-relaxed">
-                                    💡 <strong className="text-gray-400">Tip:</strong> Press <kbd className="px-1 py-0.5 bg-white/10 rounded text-[10px]">Esc</kbd> or click outside to close.
-                                </p>
+                            {/* Keyboard Shortcuts Hint */}
+                            <div className="mt-4 pt-3 border-t border-gray-800 text-[10px] text-gray-500 flex flex-wrap gap-x-3 gap-y-1">
+                                <span><kbd className="px-1 py-0.5 bg-white/10 rounded text-[9px] text-gray-400 font-mono">Space</kbd> Play/Pause</span>
+                                <span><kbd className="px-1 py-0.5 bg-white/10 rounded text-[9px] text-gray-400 font-mono">← / →</kbd> ±10s</span>
+                                <span><kbd className="px-1 py-0.5 bg-white/10 rounded text-[9px] text-gray-400 font-mono">M</kbd> Mute</span>
+                                <span><kbd className="px-1 py-0.5 bg-white/10 rounded text-[9px] text-gray-400 font-mono">F</kbd> Fullscreen</span>
                             </div>
                         </div>
                     </div>

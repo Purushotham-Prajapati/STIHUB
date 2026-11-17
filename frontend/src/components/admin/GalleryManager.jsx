@@ -3,7 +3,7 @@ import { api } from '../../context/AuthContext';
 import {
     Trash2, Edit2, UploadCloud, X, Save, ImageIcon, CheckCircle,
     AlertCircle, Video, PlayCircle, PauseCircle, Play, Pause, RotateCcw,
-    Loader2, Link as LinkIcon, AlertTriangle
+    Loader2, Link as LinkIcon, AlertTriangle, Check
 } from 'lucide-react';
 
 const CHUNK_SIZE = 2.5 * 1024 * 1024; // 2.5 MB chunks for faster upload & high resilience
@@ -51,6 +51,7 @@ const GalleryManager = () => {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [filterSection, setFilterSection] = useState('all');
     const [driveStatus, setDriveStatus] = useState(null);
+    const [isDragging, setIsDragging] = useState(false);
 
     // Modal-based edit state
     const [editingItem, setEditingItem] = useState(null);
@@ -104,7 +105,14 @@ const GalleryManager = () => {
     useEffect(() => {
         fetchItems();
         checkDriveStatus();
-        api.get('/sections').then(({ data }) => setSections(data)).catch(() => { });
+        api.get('/sections').then(({ data }) => {
+            const gallerySecs = Array.isArray(data) ? data.filter(s => !s.targetPage || s.targetPage === 'gallery') : [];
+            setSections(gallerySecs);
+            const vSec = gallerySecs.find(s => s.title?.toLowerCase() === 'videos' || s.title?.toLowerCase().includes('video'));
+            if (vSec) {
+                setLinkForm(prev => prev.sectionName === 'Project Gallery' ? { ...prev, sectionName: vSec.title } : prev);
+            }
+        }).catch(() => { });
     }, []);
 
     // Dynamically generate category list from existing items + defaults + engagement cards
@@ -128,7 +136,7 @@ const GalleryManager = () => {
             const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
             const isOverFreeLimit = isVideo && (file.size > IMAGEKIT_FREE_TIER_LIMIT_MB * 1024 * 1024);
 
-            // If video, extract metadata and snapshot thumbnail automatically
+            // If video, extract duration and snapshot multiple thumbnail options
             if (isVideo) {
                 const tempVideo = document.createElement('video');
                 tempVideo.preload = 'metadata';
@@ -141,23 +149,61 @@ const GalleryManager = () => {
                         const secs = dur % 60;
                         const durationString = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
                         updateFileMeta(id, 'videoDuration', durationString);
-                    }
-                    tempVideo.currentTime = Math.min(1, tempVideo.duration / 2);
-                };
 
-                tempVideo.onseeked = () => {
-                    try {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = Math.min(640, tempVideo.videoWidth || 640);
-                        canvas.height = Math.min(360, tempVideo.videoHeight || 360);
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
-                        const dataUrl = canvas.toDataURL('image/webp', 0.8);
-                        updateFileMeta(id, 'thumbnailPreview', dataUrl);
-                    } catch {
-                        // ignore canvas error
+                        const points = [
+                            Math.max(0.5, dur * 0.2),
+                            Math.max(1, dur * 0.5),
+                            Math.max(1.5, dur * 0.8),
+                        ];
+                        const captured = [];
+                        let pIdx = 0;
+
+                        const captureNext = () => {
+                            if (pIdx >= points.length) {
+                                if (captured.length > 0) {
+                                    updateFileMeta(id, 'thumbnailOptions', captured);
+                                    updateFileMeta(id, 'thumbnailPreview', captured[1] || captured[0]);
+                                }
+                                return;
+                            }
+                            tempVideo.currentTime = points[pIdx];
+                        };
+
+                        tempVideo.onseeked = () => {
+                            try {
+                                const canvas = document.createElement('canvas');
+                                canvas.width = Math.min(640, tempVideo.videoWidth || 640);
+                                canvas.height = Math.min(360, tempVideo.videoHeight || 360);
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
+                                const dataUrl = canvas.toDataURL('image/webp', 0.85);
+                                captured.push(dataUrl);
+                            } catch {
+                                // ignore canvas error
+                            }
+                            pIdx++;
+                            captureNext();
+                        };
+
+                        captureNext();
                     }
                 };
+            }
+
+            // Intelligent section routing:
+            // 1. If user explicitly selected a non-default section in sharedMeta, respect it.
+            // 2. If it is a video and a "Videos" section exists, auto-route video to "Videos".
+            // 3. Otherwise, fallback to sharedMeta.sectionName || 'Project Gallery'.
+            let initialSection = sharedMeta.sectionName || 'Project Gallery';
+            if (isVideo) {
+                if (sharedMeta.sectionName && sharedMeta.sectionName !== 'Project Gallery') {
+                    initialSection = sharedMeta.sectionName;
+                } else {
+                    const videoSec = sections.find(s => s.title?.toLowerCase() === 'videos' || s.title?.toLowerCase().includes('video'));
+                    if (videoSec) {
+                        initialSection = videoSec.title;
+                    }
+                }
             }
 
             return {
@@ -171,12 +217,13 @@ const GalleryManager = () => {
                 title: sharedMeta.title || file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
                 category: sharedMeta.category,
                 customCategory: sharedMeta.customCategory,
-                sectionName: sharedMeta.sectionName,
+                sectionName: initialSection,
                 description: sharedMeta.description,
                 date: sharedMeta.date,
                 videoDuration: '',
                 thumbnailFile: null,
                 thumbnailPreview: null,
+                thumbnailOptions: [],
                 status: 'pending',
                 progress: 0,
                 currentChunk: 0,
@@ -305,7 +352,8 @@ const GalleryManager = () => {
                 try {
                     const response = await api.post('/gallery/upload-chunk', formData, {
                         signal: controller.signal,
-                        headers: { 'Content-Type': 'multipart/form-data' }
+                        headers: { 'Content-Type': 'multipart/form-data' },
+                        timeout: 90000 // 90s timeout for resilient transfers in low-network areas
                     });
 
                     chunkSuccess = true;
@@ -315,11 +363,14 @@ const GalleryManager = () => {
                     const percent = Math.min(99, Math.round((uploadedChunks.length / totalChunks) * 100));
                     const elapsedSec = (Date.now() - startTime) / 1000;
                     const speedMBs = elapsedSec > 0 ? ((bytesUploaded / (1024 * 1024)) / elapsedSec).toFixed(1) : '0.0';
+                    const remainingBytes = file.size - bytesUploaded;
+                    const etaSec = parseFloat(speedMBs) > 0 ? Math.round((remainingBytes / (1024 * 1024)) / parseFloat(speedMBs)) : 0;
+                    const etaText = etaSec > 0 ? ` • ETA: ${etaSec > 60 ? `${Math.floor(etaSec / 60)}m ${etaSec % 60}s` : `${etaSec}s`}` : '';
 
                     updateFileMeta(entry.id, 'progress', percent);
                     updateFileMeta(entry.id, 'currentChunk', chunkIdx + 1);
                     updateFileMeta(entry.id, 'speed', `${speedMBs} MB/s`);
-                    updateFileMeta(entry.id, 'statusText', `Uploaded chunk ${chunkIdx + 1} of ${totalChunks} (${speedMBs} MB/s)`);
+                    updateFileMeta(entry.id, 'statusText', `Uploading chunk ${chunkIdx + 1}/${totalChunks} (${speedMBs} MB/s${etaText})`);
 
                     if (response.data.status === 'complete' || response.data.isComplete) {
                         updateFileMeta(entry.id, 'progress', 100);
@@ -370,6 +421,8 @@ const GalleryManager = () => {
                 date: entry.date || '',
                 videoDuration: entry.videoDuration || '',
                 thumbnailBase64: entry.thumbnailPreview || '',
+            }, {
+                timeout: 180000 // 3 minutes timeout for stream assembling and Google Drive upload
             });
 
             const provider = finalizeRes.data?.storageProvider === 'google-drive' ? 'Google Drive' : 'ImageKit';
@@ -696,10 +749,22 @@ const GalleryManager = () => {
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Gallery Section</label>
-                                <select value={sharedMeta.sectionName} onChange={e => setSharedMeta({ ...sharedMeta, sectionName: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 bg-white">
+                                <select
+                                    value={sharedMeta.sectionName}
+                                    onChange={e => {
+                                        const newSec = e.target.value;
+                                        setSharedMeta(prev => ({ ...prev, sectionName: newSec }));
+                                        setSelectedFiles(prev => prev.map(f => f.status === 'pending' ? { ...f, sectionName: newSec } : f));
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 bg-white font-medium"
+                                >
                                     <option value="Project Gallery">📸 Project Gallery (default)</option>
-                                    {sections.map(s => <option key={s._id} value={s.title}>{s.title}</option>)}
+                                    {sections.map(s => (
+                                        <option key={s._id} value={s.title}>
+                                            {s.title.toLowerCase().includes('video') ? '🎬 ' : '📁 '}
+                                            {s.title}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             <div>
@@ -718,33 +783,74 @@ const GalleryManager = () => {
                             </div>
                         </div>
 
-                        {/* File Picker + Buttons */}
-                        <div className="flex flex-wrap items-center gap-3 mb-6 pt-4 border-t border-gray-100">
-                            <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium text-sm rounded-lg border border-blue-200 transition-colors">
-                                <Video size={16} className="text-purple-600" />
-                                <ImageIcon size={16} className="text-blue-600" />
-                                Select Video or Photo Files
-                                <input type="file" multiple accept="image/*,video/*"
-                                    onChange={handleFileChange} ref={fileInputRef} className="hidden" />
-                            </label>
+                        {/* Interactive Drag & Drop Area */}
+                        <div
+                            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                            onDragLeave={() => setIsDragging(false)}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                setIsDragging(false);
+                                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                                    handleFileChange({ target: { files: e.dataTransfer.files } });
+                                }
+                            }}
+                            onClick={() => fileInputRef.current?.click()}
+                            className={`cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-all duration-300 flex flex-col items-center justify-center gap-2 mb-4 group ${
+                                isDragging
+                                    ? 'border-blue-500 bg-blue-50/80 scale-[1.01]'
+                                    : 'border-gray-300 hover:border-blue-400 hover:bg-blue-50/20 bg-gray-50/50'
+                            }`}
+                        >
+                            <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-xs">
+                                <UploadCloud size={24} />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-gray-800">
+                                    Drag & drop video or photo files here, or <span className="text-blue-600 underline font-semibold">browse files</span>
+                                </p>
+                                <p className="text-xs text-gray-400 mt-0.5">
+                                    Supports MP4, WEBM, MOV, MKV, JPG, PNG, WEBP • Auto-routes &gt;100MB to Google Drive
+                                </p>
+                            </div>
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*,video/*"
+                                onChange={handleFileChange}
+                                ref={fileInputRef}
+                                className="hidden"
+                            />
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap items-center gap-3 mb-6 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-lg border border-blue-200 transition-colors shadow-xs"
+                            >
+                                <Video size={14} className="text-purple-600" />
+                                <ImageIcon size={14} className="text-blue-600" />
+                                + Select More Files
+                            </button>
                             {selectedFiles.some(f => f.status === 'pending') && (
                                 <button onClick={applySharedMeta}
-                                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-sm rounded-lg border border-gray-200 transition-colors">
-                                    Apply Metadata to All
+                                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-lg border border-gray-200 transition-colors">
+                                    Apply Shared Settings to All
                                 </button>
                             )}
                             {doneCount > 0 && (
                                 <button onClick={clearCompleted}
-                                    className="px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 font-medium text-sm rounded-lg border border-green-200 transition-colors">
+                                    className="px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 font-bold text-xs rounded-lg border border-green-200 transition-colors">
                                     Clear Completed ({doneCount})
                                 </button>
                             )}
                             {pendingCount > 0 && (
                                 <button onClick={handleUploadAll} disabled={uploading}
-                                    className="ml-auto px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-lg shadow-sm disabled:opacity-60 flex items-center gap-2 transition-colors">
+                                    className="ml-auto px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-lg shadow-sm disabled:opacity-60 flex items-center gap-2 transition-colors">
                                     {uploading
                                         ? <><Loader2 size={16} className="animate-spin" /> Uploading...</>
-                                        : `Upload All (${pendingCount})`}
+                                        : `Start Upload (${pendingCount})`}
                                 </button>
                             )}
                         </div>
@@ -879,41 +985,81 @@ const GalleryManager = () => {
                                             </div>
 
                                             {/* Per-File Metadata Inputs */}
-                                            <div className="p-3 space-y-2 flex-grow flex flex-col">
-                                                <input type="text" value={entry.title}
-                                                    onChange={e => updateFileMeta(entry.id, 'title', e.target.value)}
-                                                    disabled={isDone || isUploading}
-                                                    className="w-full text-sm font-semibold border border-gray-200 rounded px-2 py-1 disabled:bg-gray-50 focus:border-blue-400"
-                                                    placeholder="Title" />
+                                            <div className="p-3.5 space-y-2.5 flex-grow flex flex-col bg-white">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-0.5">Title</label>
+                                                    <input type="text" value={entry.title}
+                                                        onChange={e => updateFileMeta(entry.id, 'title', e.target.value)}
+                                                        disabled={isDone || isUploading}
+                                                        className="w-full text-sm font-semibold border border-gray-300 rounded px-2 py-1.5 disabled:bg-gray-50 focus:border-blue-500 bg-white text-gray-900"
+                                                        placeholder="Title" />
+                                                </div>
+
+                                                {/* Target Section Selector */}
+                                                <div>
+                                                    <div className="flex items-center justify-between mb-0.5">
+                                                        <label className="text-[10px] font-bold text-gray-600 uppercase tracking-wider">
+                                                            Target Section
+                                                        </label>
+                                                        {entry.sectionName?.toLowerCase().includes('video') && (
+                                                            <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200 flex items-center gap-1">
+                                                                <Video size={10} /> Videos Section
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <select
+                                                        value={entry.sectionName || 'Project Gallery'}
+                                                        onChange={e => updateFileMeta(entry.id, 'sectionName', e.target.value)}
+                                                        disabled={isDone || isUploading}
+                                                        className="w-full text-xs font-semibold border border-gray-300 rounded px-2 py-1.5 disabled:bg-gray-50 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 shadow-sm"
+                                                    >
+                                                        <option value="Project Gallery">📸 Project Gallery (Default)</option>
+                                                        {sections.map(s => (
+                                                            <option key={s._id} value={s.title}>
+                                                                {s.title.toLowerCase().includes('video') ? '🎬 ' : '📁 '}
+                                                                {s.title}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
 
                                                 <div className="flex gap-2">
-                                                    <select value={entry.category}
-                                                        onChange={e => updateFileMeta(entry.id, 'category', e.target.value)}
-                                                        disabled={isDone || isUploading}
-                                                        className="flex-1 text-xs border border-gray-200 rounded px-2 py-1 disabled:bg-gray-50 bg-white">
-                                                        {allCategories.map(c => <option key={c} value={c}>{c}</option>)}
-                                                        <option value="new" className="font-semibold text-blue-600">+ New Category</option>
-                                                    </select>
-                                                    <input type="text" value={entry.date}
-                                                        onChange={e => updateFileMeta(entry.id, 'date', e.target.value)}
-                                                        disabled={isDone || isUploading}
-                                                        className="w-20 text-xs border border-gray-200 rounded px-2 py-1 disabled:bg-gray-50"
-                                                        placeholder="Year" />
+                                                    <div className="flex-1">
+                                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-0.5">Category</label>
+                                                        <select value={entry.category}
+                                                            onChange={e => updateFileMeta(entry.id, 'category', e.target.value)}
+                                                            disabled={isDone || isUploading}
+                                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1.5 disabled:bg-gray-50 bg-white text-gray-900 font-medium">
+                                                            {allCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                                                            <option value="new" className="font-semibold text-blue-600">+ New Category</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="w-24">
+                                                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-0.5">Year</label>
+                                                        <input type="text" value={entry.date}
+                                                            onChange={e => updateFileMeta(entry.id, 'date', e.target.value)}
+                                                            disabled={isDone || isUploading}
+                                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1.5 disabled:bg-gray-50 bg-white text-gray-900"
+                                                            placeholder="Year" />
+                                                    </div>
                                                 </div>
 
                                                 {entry.category === 'new' && (
                                                     <input type="text" value={entry.customCategory || ''}
                                                         onChange={e => updateFileMeta(entry.id, 'customCategory', e.target.value)}
                                                         disabled={isDone || isUploading}
-                                                        className="w-full text-xs border border-blue-300 rounded px-2 py-1"
+                                                        className="w-full text-xs border border-blue-400 rounded px-2 py-1.5 bg-white text-gray-900"
                                                         placeholder="Enter new category name..." />
                                                 )}
 
-                                                <input type="text" value={entry.description}
-                                                    onChange={e => updateFileMeta(entry.id, 'description', e.target.value)}
-                                                    disabled={isDone || isUploading}
-                                                    className="w-full text-xs border border-gray-200 rounded px-2 py-1 disabled:bg-gray-50"
-                                                    placeholder="Description" />
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-0.5">Description</label>
+                                                    <input type="text" value={entry.description}
+                                                        onChange={e => updateFileMeta(entry.id, 'description', e.target.value)}
+                                                        disabled={isDone || isUploading}
+                                                        className="w-full text-xs border border-gray-300 rounded px-2 py-1.5 disabled:bg-gray-50 bg-white text-gray-900"
+                                                        placeholder="Description" />
+                                                </div>
 
                                                 {/* Video Duration & Custom Thumbnail */}
                                                 {entry.isVideo && (
@@ -928,25 +1074,59 @@ const GalleryManager = () => {
                                                         </div>
 
                                                         <div>
-                                                            <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-1">
-                                                                Thumbnail (Auto-captured / Pick custom)
+                                                            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
+                                                                Thumbnail (Pick Video Frame or Custom Image)
                                                             </label>
+
+                                                            {entry.thumbnailOptions?.length > 0 && (
+                                                                <div className="grid grid-cols-3 gap-1.5 mb-2">
+                                                                    {entry.thumbnailOptions.map((frame, fIdx) => {
+                                                                        const isSelected = entry.thumbnailPreview === frame;
+                                                                        return (
+                                                                            <button
+                                                                                key={fIdx}
+                                                                                type="button"
+                                                                                onClick={() => updateFileMeta(entry.id, 'thumbnailPreview', frame)}
+                                                                                disabled={isDone || isUploading}
+                                                                                className={`relative h-12 rounded-lg overflow-hidden border-2 transition-all p-0 group/frame ${
+                                                                                    isSelected
+                                                                                        ? 'border-blue-600 ring-2 ring-blue-400 scale-[1.02] shadow-sm'
+                                                                                        : 'border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-400'
+                                                                                }`}
+                                                                                title={`Select Frame ${fIdx + 1}`}
+                                                                            >
+                                                                                <img src={frame} alt={`Frame ${fIdx + 1}`} className="w-full h-full object-cover" />
+                                                                                <span className="absolute bottom-0.5 right-1 text-[8px] bg-black/80 text-white px-1 rounded font-mono font-bold">
+                                                                                    #{fIdx + 1}
+                                                                                </span>
+                                                                                {isSelected && (
+                                                                                    <span className="absolute top-1 left-1 bg-blue-600 text-white rounded-full p-0.5 shadow">
+                                                                                        <Check size={9} />
+                                                                                    </span>
+                                                                                )}
+                                                                            </button>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            )}
+
                                                             {entry.thumbnailPreview ? (
-                                                                <div className="relative h-14 rounded overflow-hidden border border-gray-200 flex items-center justify-between px-2 bg-gray-50">
-                                                                    <img src={entry.thumbnailPreview} className="w-16 h-10 object-cover rounded" alt="thumb" />
-                                                                    <span className="text-[10px] text-gray-400 font-medium">Ready</span>
+                                                                <div className="relative h-12 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-between px-2 bg-gray-50">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <img src={entry.thumbnailPreview} className="w-14 h-9 object-cover rounded shadow-xs" alt="thumb" />
+                                                                        <span className="text-[10px] text-green-700 font-bold bg-green-50 px-1.5 py-0.5 rounded border border-green-200">Ready</span>
+                                                                    </div>
                                                                     {!isDone && !isUploading && (
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => updateFileMeta(entry.id, 'thumbnailPreview', null)}
-                                                                            className="text-gray-400 hover:text-red-600 p-1">
-                                                                            <X size={12} />
-                                                                        </button>
+                                                                        <label className="cursor-pointer text-[10px] text-blue-600 hover:underline font-semibold flex items-center gap-1">
+                                                                            <ImageIcon size={11} /> Custom
+                                                                            <input type="file" accept="image/*" className="hidden"
+                                                                                onChange={(e) => handleThumbnailChange(entry.id, e)} />
+                                                                        </label>
                                                                     )}
                                                                 </div>
                                                             ) : (
-                                                                <label className="cursor-pointer flex items-center gap-1.5 px-2.5 py-1.5 border border-dashed border-gray-300 rounded text-xs text-gray-500 hover:border-blue-400 transition-colors">
-                                                                    <ImageIcon size={12} /> Pick custom thumbnail
+                                                                <label className="cursor-pointer flex items-center justify-center gap-1.5 px-2.5 py-2 border border-dashed border-gray-300 rounded-lg text-xs text-gray-500 hover:border-blue-500 hover:text-blue-600 transition-colors">
+                                                                    <ImageIcon size={13} /> Upload Custom Thumbnail Image
                                                                     <input type="file" accept="image/*" className="hidden"
                                                                         onChange={(e) => handleThumbnailChange(entry.id, e)} />
                                                                 </label>
@@ -1027,14 +1207,19 @@ const GalleryManager = () => {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Section</label>
+                                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Target Section</label>
                                 <select
                                     value={linkForm.sectionName}
                                     onChange={e => setLinkForm({ ...linkForm, sectionName: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 bg-white"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 bg-white font-medium"
                                 >
                                     <option value="Project Gallery">📸 Project Gallery (default)</option>
-                                    {sections.map(s => <option key={s._id} value={s.title}>{s.title}</option>)}
+                                    {sections.map(s => (
+                                        <option key={s._id} value={s.title}>
+                                            {s.title.toLowerCase().includes('video') ? '🎬 ' : '📁 '}
+                                            {s.title}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
 
@@ -1101,17 +1286,84 @@ const GalleryManager = () => {
 
             {/* Gallery Database Grid */}
             <div>
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-4 border-b pb-3">
-                    <h3 className="text-lg font-bold text-gray-800">
-                        Gallery Database ({filterSection === 'all' ? items.length : filteredItems.length})
-                        {filterSection !== 'all' && <span className="ml-2 text-sm font-normal text-blue-600">— {filterSection}</span>}
-                    </h3>
-                    <select value={filterSection} onChange={e => setFilterSection(e.target.value)}
-                        className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-blue-400">
-                        <option value="all">All Sections</option>
-                        <option value="Project Gallery">📸 Project Gallery</option>
-                        {sections.map(s => <option key={s._id} value={s.title}>{s.title}</option>)}
-                    </select>
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-3 border-b pb-3">
+                    <div>
+                        <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                            <span>Gallery Database</span>
+                            <span className="text-xs bg-gray-100 text-gray-700 font-bold px-2.5 py-0.5 rounded-full border border-gray-200">
+                                {filterSection === 'all' ? items.length : filteredItems.length} items
+                            </span>
+                        </h3>
+                        {filterSection !== 'all' && (
+                            <p className="text-xs text-blue-600 font-semibold mt-0.5">
+                                Filtered to: {filterSection}
+                            </p>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500 font-medium">Filter Section:</span>
+                        <select value={filterSection} onChange={e => setFilterSection(e.target.value)}
+                            className="px-3 py-1.5 text-xs font-semibold border border-gray-300 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-blue-400 shadow-sm">
+                            <option value="all">All Sections ({items.length})</option>
+                            <option value="Project Gallery">📸 Project Gallery ({items.filter(i => (i.sectionName || 'Project Gallery') === 'Project Gallery').length})</option>
+                            {sections.map(s => {
+                                const count = items.filter(i => i.sectionName === s.title).length;
+                                return (
+                                    <option key={s._id} value={s.title}>
+                                        {s.title.toLowerCase().includes('video') ? '🎬 ' : '📁 '}
+                                        {s.title} ({count})
+                                    </option>
+                                );
+                            })}
+                        </select>
+                    </div>
+                </div>
+
+                {/* Quick Section Filter Pills */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-4 scrollbar-thin">
+                    <button
+                        type="button"
+                        onClick={() => setFilterSection('all')}
+                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap shadow-sm ${
+                            filterSection === 'all'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
+                        }`}
+                    >
+                        All ({items.length})
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setFilterSection('Project Gallery')}
+                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap shadow-sm flex items-center gap-1 ${
+                            filterSection === 'Project Gallery'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
+                        }`}
+                    >
+                        📸 Project Gallery ({items.filter(i => (i.sectionName || 'Project Gallery') === 'Project Gallery').length})
+                    </button>
+                    {sections.map(s => {
+                        const count = items.filter(i => i.sectionName === s.title).length;
+                        const isVid = s.title.toLowerCase().includes('video');
+                        return (
+                            <button
+                                key={s._id}
+                                type="button"
+                                onClick={() => setFilterSection(s.title)}
+                                className={`px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap shadow-sm flex items-center gap-1.5 ${
+                                    filterSection === s.title
+                                        ? isVid ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'
+                                        : isVid
+                                            ? 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200'
+                                            : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
+                                }`}
+                            >
+                                {isVid ? <Video size={12} className="text-purple-600" /> : '📁'}
+                                {s.title} ({count})
+                            </button>
+                        );
+                    })}
                 </div>
 
                 {items.length === 0 ? (
@@ -1194,7 +1446,12 @@ const GalleryManager = () => {
                                         </div>
                                         <div className="mt-auto pt-2.5 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400 font-medium">
                                             <span>📅 {item.date || 'Year N/A'}</span>
-                                            <span className="text-[11px] text-gray-500 bg-gray-50 px-2 py-0.5 rounded border border-gray-100">
+                                            <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${
+                                                (item.sectionName || 'Project Gallery').toLowerCase().includes('video')
+                                                    ? 'text-purple-700 bg-purple-50 border-purple-200'
+                                                    : 'text-gray-700 bg-gray-50 border-gray-200'
+                                            }`}>
+                                                {(item.sectionName || 'Project Gallery').toLowerCase().includes('video') ? <Video size={10} className="text-purple-600" /> : '📁'}
                                                 {item.sectionName || 'Project Gallery'}
                                             </span>
                                         </div>
@@ -1305,15 +1562,20 @@ const GalleryManager = () => {
                                 {/* Section */}
                                 <div>
                                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                                        Section
+                                        Target Section
                                     </label>
                                     <select
                                         value={editForm.sectionName}
                                         onChange={e => setEditForm({ ...editForm, sectionName: e.target.value })}
-                                        className="w-full px-3.5 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+                                        className="w-full px-3.5 py-2.5 bg-white text-gray-900 border border-gray-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-500 shadow-sm"
                                     >
                                         <option value="Project Gallery">📸 Project Gallery (default)</option>
-                                        {sections.map(s => <option key={s._id} value={s.title}>{s.title}</option>)}
+                                        {sections.map(s => (
+                                            <option key={s._id} value={s.title}>
+                                                {s.title.toLowerCase().includes('video') ? '🎬 ' : '📁 '}
+                                                {s.title}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
 
