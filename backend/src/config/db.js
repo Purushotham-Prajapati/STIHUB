@@ -16,12 +16,16 @@ const connectDB = async () => {
     // Strip accidental surrounding quotes or whitespace from dashboard copy-paste
     const uri = rawUri.replace(/^["']|["']$/g, '').trim();
 
-    if (cached.conn) {
+    if (cached.conn && mongoose.connection.readyState === 1) {
         return cached.conn;
     }
 
     if (!cached.promise) {
-        cached.promise = mongoose.connect(uri).then((m) => {
+        const opts = {
+            bufferCommands: false,
+            serverSelectionTimeoutMS: 8000,
+        };
+        cached.promise = mongoose.connect(uri, opts).then((m) => {
             console.log(`MongoDB Connected: ${m.connection.host}`);
             return m;
         }).catch((err) => {

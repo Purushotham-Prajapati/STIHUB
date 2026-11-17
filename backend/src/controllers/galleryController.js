@@ -3,6 +3,7 @@ import path from 'path';
 import ImageKit from '@imagekit/nodejs';
 import GalleryItem from '../models/GalleryItem.js';
 import imagekit from '../config/imagekit.js';
+import os from 'os';
 import {
     getDriveClient,
     uploadFileToGoogleDrive,
@@ -11,12 +12,17 @@ import {
     exchangeCodeForTokens,
 } from '../config/googleDrive.js';
 
-const TEMP_CHUNKS_DIR = path.resolve('temp_uploads', 'chunks');
+// Use os.tmpdir() (e.g. /tmp) so serverless containers on Vercel/AWS Lambda don't throw EROFS read-only filesystem errors
+const TEMP_CHUNKS_DIR = path.join(os.tmpdir(), 'stihub_chunks');
 const IMAGEKIT_FREE_TIER_MAX_BYTES = 104857600; // 100 MB in bytes
 
-// Ensure base temporary chunk directory exists
-if (!fs.existsSync(TEMP_CHUNKS_DIR)) {
-    fs.mkdirSync(TEMP_CHUNKS_DIR, { recursive: true });
+// Safe check: ensure base temporary directory exists without crashing on read-only environments
+try {
+    if (!fs.existsSync(TEMP_CHUNKS_DIR)) {
+        fs.mkdirSync(TEMP_CHUNKS_DIR, { recursive: true });
+    }
+} catch (dirErr) {
+    console.warn('Could not initialize temp chunk dir on boot:', dirErr.message);
 }
 
 const normalizeCategory = (cat) => {

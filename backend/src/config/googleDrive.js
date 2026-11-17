@@ -80,9 +80,13 @@ export const exchangeCodeForTokens = async (code) => {
         } else {
             envContent += `\nGOOGLE_DRIVE_REFRESH_TOKEN="${tokens.refresh_token}"\n`;
         }
-        fs.writeFileSync(envPath, envContent, 'utf-8');
+        try {
+            fs.writeFileSync(envPath, envContent, 'utf-8');
+            console.log('Saved GOOGLE_DRIVE_REFRESH_TOKEN to .env successfully.');
+        } catch (writeErr) {
+            console.warn('Could not write token to .env (serverless environment):', writeErr.message);
+        }
         process.env.GOOGLE_DRIVE_REFRESH_TOKEN = tokens.refresh_token;
-        console.log('Saved GOOGLE_DRIVE_REFRESH_TOKEN to .env successfully.');
     }
 
     return tokens;
