@@ -7,11 +7,14 @@ if (!cached) {
 }
 
 const connectDB = async () => {
-    const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
+    let rawUri = process.env.MONGODB_URI || process.env.MONGO_URI;
 
-    if (!uri) {
+    if (!rawUri) {
         throw new Error('Neither MONGODB_URI nor MONGO_URI is defined in environment variables');
     }
+
+    // Strip accidental surrounding quotes or whitespace from dashboard copy-paste
+    const uri = rawUri.replace(/^["']|["']$/g, '').trim();
 
     if (cached.conn) {
         return cached.conn;
