@@ -5,7 +5,17 @@ import SectionTitle from '../common/SectionTitle';
 import AnimatedCard from '../ui/AnimatedCard';
 import { livelihoodCapitals as staticFallback } from '../../constants/data';
 
-const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:5000/api';
+const getApiBase = () => {
+    if (typeof window !== 'undefined') {
+        const host = window.location.hostname;
+        if (host === 'localhost' || host === '127.0.0.1') {
+            return 'http://localhost:5000/api';
+        }
+    }
+    return '/api';
+};
+
+const API_BASE = getApiBase();
 
 // Skeleton card for loading state
 const SkeletonCard = () => (

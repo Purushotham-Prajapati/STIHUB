@@ -22,7 +22,17 @@ import SEO from '../components/seo/SEO';
 import ImageCanvas from '../components/ui/ImageCanvas';
 import CustomVideoPlayer from '../components/ui/CustomVideoPlayer';
 
-const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:5000/api';
+const getApiBase = () => {
+    if (typeof window !== 'undefined') {
+        const host = window.location.hostname;
+        if (host === 'localhost' || host === '127.0.0.1') {
+            return 'http://localhost:5000/api';
+        }
+    }
+    return '/api';
+};
+
+const API_BASE = getApiBase();
 
 const getEmbedUrl = (url) => {
     if (!url) return null;

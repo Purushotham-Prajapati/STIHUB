@@ -1,9 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
+const getBaseUrl = () => {
+    if (typeof window !== 'undefined') {
+        const host = window.location.hostname;
+        if (host === 'localhost' || host === '127.0.0.1') {
+            return 'http://localhost:5000/api';
+        }
+    }
+    return '/api';
+};
+
 // Create an Axios instance for API calls
 export const api = axios.create({
-    baseURL: import.meta.env.PROD ? '/api' : 'http://localhost:5000/api',
+    baseURL: getBaseUrl(),
     withCredentials: true, // Crucial for sending/receiving HttpOnly cookies
 });
 
