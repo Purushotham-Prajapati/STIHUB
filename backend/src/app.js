@@ -12,6 +12,7 @@ import engagementRoutes from './routes/engagementRoutes.js';
 import newsRoutes from './routes/newsRoutes.js';
 import livelihoodRoutes from './routes/livelihoodRoutes.js';
 import { getGoogleAuthUrl, googleOAuthCallback } from './controllers/galleryController.js';
+import connectDB from './config/db.js';
 
 const app = express();
 
@@ -47,6 +48,20 @@ app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
 // Cookie parser for JWT
 app.use(cookieParser());
+
+// Serverless-resilient MongoDB connection middleware
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (err) {
+        console.error('Serverless DB connection error:', err.message);
+        res.status(500).json({
+            message: 'Database connection failed. Please ensure MONGODB_URI is configured and MongoDB Network Access allows 0.0.0.0/0.',
+            error: err.message
+        });
+    }
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
