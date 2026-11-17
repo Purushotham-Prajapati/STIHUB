@@ -1,17 +1,43 @@
 import express from 'express';
 import multer from 'multer';
-import { getGalleryItems, uploadGalleryItem, updateGalleryItem, deleteGalleryItem } from '../controllers/galleryController.js';
+import {
+    getGalleryItems,
+    uploadGalleryItem,
+    updateGalleryItem,
+    deleteGalleryItem,
+    uploadChunk,
+    finalizeUpload,
+    getUploadStatus,
+    cancelUpload,
+    addVideoByUrl,
+    getGoogleAuthUrl,
+    googleOAuthCallback,
+    getGoogleDriveStatus
+} from '../controllers/galleryController.js';
 import { protect } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() }); // Store in memory for ImageKit upload
+const upload = multer({ storage: multer.memoryStorage() });
 
+// Resumable chunked upload endpoints
+router.post('/upload-chunk', protect, upload.single('chunk'), uploadChunk);
+router.post('/finalize-upload', protect, finalizeUpload);
+router.get('/upload-status/:uploadId', protect, getUploadStatus);
+router.post('/cancel-upload/:uploadId', protect, cancelUpload);
+router.post('/video-link', protect, addVideoByUrl);
+
+// Google Drive OAuth & status routes
+router.get('/google-auth-url', getGoogleAuthUrl);
+router.get('/google-oauth-callback', googleOAuthCallback);
+router.get('/google-drive-status', getGoogleDriveStatus);
+
+// Standard endpoints
 router.route('/')
     .get(getGalleryItems)
-    .post(protect, upload.single('image'), uploadGalleryItem);
+    .post(protect, upload.fields([{ name: 'image', maxCount: 1 }, { name: 'thumbnail', maxCount: 1 }]), uploadGalleryItem);
 
 router.route('/:id')
-    .put(protect, updateGalleryItem)
+    .put(protect, upload.fields([{ name: 'image', maxCount: 1 }, { name: 'thumbnail', maxCount: 1 }]), updateGalleryItem)
     .delete(protect, deleteGalleryItem);
 
 export default router;

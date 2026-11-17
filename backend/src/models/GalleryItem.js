@@ -3,11 +3,11 @@ import mongoose from 'mongoose';
 const galleryItemSchema = new mongoose.Schema({
     imageUrl: {
         type: String,
-        required: true,
+        default: '',
     },
     imageKitFileId: {
         type: String,
-        required: true,
+        default: '',
     },
     title: {
         type: String,
@@ -28,7 +28,37 @@ const galleryItemSchema = new mongoose.Schema({
     date: {
         type: String,
         default: '',
-    }
+    },
+    mediaType: {
+        type: String,
+        enum: ['image', 'video'],
+        default: 'image',
+    },
+    videoUrl: {
+        type: String,
+        default: '',
+    },
+    videoDuration: {
+        type: String,
+        default: '',
+    },
+    thumbnailUrl: {
+        type: String,
+        default: '',
+    },
+    thumbnailKitFileId: {
+        type: String,
+        default: '',
+    },
+    googleDriveFileId: {
+        type: String,
+        default: '',
+    },
+    storageProvider: {
+        type: String,
+        enum: ['imagekit', 'google-drive', 'external'],
+        default: 'imagekit',
+    },
 }, {
     timestamps: true
 });

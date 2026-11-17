@@ -18,4 +18,13 @@
     h1 {
         @apply font-extrabold;
     }
+
+    input:not([type="checkbox"]):not([type="radio"]), textarea, select {
+        color: #111827;
+        background-color: #ffffff;
+    }
+
+    input::placeholder, textarea::placeholder {
+        color: #9ca3af;
+    }
 }

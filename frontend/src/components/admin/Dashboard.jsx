@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Image as ImageIcon, Layout, PlusCircle, Users, Newspaper } from 'lucide-react';
+import { LogOut, Image as ImageIcon, Layout, PlusCircle, Users, Newspaper, Briefcase } from 'lucide-react';
 import GalleryManager from './GalleryManager';
 import SectionManager from './SectionManager';
 import SliderManager from './SliderManager';
 import EngagementManager from './EngagementManager';
 import NewsManager from './NewsManager';
+import LivelihoodManager from './LivelihoodManager';
 
 const Dashboard = () => {
     const { logout, user } = useAuth();
@@ -18,6 +19,15 @@ const Dashboard = () => {
         navigate('/');
     };
 
+    const navItems = [
+        { id: 'gallery',     label: 'Gallery Manager',    icon: <ImageIcon size={20} /> },
+        { id: 'slider',      label: 'Hero Sliders',       icon: <PlusCircle size={20} /> },
+        { id: 'sections',    label: 'Dynamic Sections',   icon: <Layout size={20} /> },
+        { id: 'engagement',  label: 'Engagement Cards',   icon: <Users size={20} /> },
+        { id: 'news',        label: 'News & Reports',     icon: <Newspaper size={20} /> },
+        { id: 'livelihoods', label: 'Livelihood Capitals',icon: <Briefcase size={20} /> },
+    ];
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row mt-[10vh]">
             {/* Sidebar */}
@@ -28,50 +38,29 @@ const Dashboard = () => {
                 </div>
 
                 <nav className="flex-grow space-y-2">
-                    <button
-                        onClick={() => setActiveTab('gallery')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-colors ${activeTab === 'gallery' ? 'bg-blue-600 text-white font-medium shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
-                    >
-                        <ImageIcon size={20} />
-                        Gallery Manager
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('slider')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-colors ${activeTab === 'slider' ? 'bg-blue-600 text-white font-medium shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
-                    >
-                        <PlusCircle size={20} />
-                        Hero Sliders
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('sections')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-colors ${activeTab === 'sections' ? 'bg-blue-600 text-white font-medium shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
-                    >
-                        <Layout size={20} />
-                        Dynamic Sections
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('engagement')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-colors ${activeTab === 'engagement' ? 'bg-blue-600 text-white font-medium shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
-                    >
-                        <Users size={20} />
-                        Engagement Cards
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('news')}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-colors ${activeTab === 'news' ? 'bg-blue-600 text-white font-medium shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
-                    >
-                        <Newspaper size={20} />
-                        News & Reports
-                    </button>
+                    {navItems.map(({ id, label, icon }) => (
+                        <button
+                            key={id}
+                            onClick={() => setActiveTab(id)}
+                            className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-colors ${
+                                activeTab === id
+                                    ? 'bg-blue-600 text-white font-medium shadow-md'
+                                    : 'text-gray-600 hover:bg-gray-100'
+                            }`}
+                        >
+                            {icon}
+                            {label}
+                        </button>
+                    ))}
                 </nav>
 
                 <div className="pt-6 border-t border-gray-100">
                     <div className="flex items-center gap-3 px-4 py-2 mb-4">
                         <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs uppercase">
-                            {user?.username?.charAt(0) || 'A'}
+                            {user?.username?.charAt(0) || user?.email?.charAt(0) || 'A'}
                         </div>
                         <div className="overflow-hidden">
-                            <p className="text-sm font-bold text-gray-800 truncate">{user?.username || 'Admin User'}</p>
+                            <p className="text-sm font-bold text-gray-800 truncate">{user?.username || user?.email || 'Admin User'}</p>
                             <p className="text-[10px] text-gray-400 font-medium">System Administrator</p>
                         </div>
                     </div>
@@ -93,6 +82,7 @@ const Dashboard = () => {
                     {activeTab === 'sections' && <SectionManager />}
                     {activeTab === 'engagement' && <EngagementManager />}
                     {activeTab === 'news' && <NewsManager />}
+                    {activeTab === 'livelihoods' && <LivelihoodManager />}
                 </div>
             </div>
         </div>
